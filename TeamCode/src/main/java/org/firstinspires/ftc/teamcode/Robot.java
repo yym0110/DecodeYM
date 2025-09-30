@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.acmerobotics.dashboard.canvas.Canvas;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.priority.HardwareQueue;
@@ -24,31 +26,37 @@ public class Robot {
 
     public Sensors sensors;
     public Drivetrain drivetrain;
+    public Intake intake;
+    public Shooter shooter;
 
     private BooleanSupplier stopChecker = null;
-    public ArrayList<Consumer<Canvas>> canvasDrawTasks;
+    public ArrayList<Consumer<Canvas>> canvasDrawTasks = new ArrayList<>();
 
-    public Robot(HardwareMap hardwareMap){
-        this(hardwareMap, null);
-    }
+    public Robot(HardwareMap hardwareMap) { this(hardwareMap, null); }
 
-    public Robot(HardwareMap hardwareMap, Vision vision){
+    public Robot(HardwareMap hardwareMap, Vision vision) {
         this.hardwareMap = hardwareMap;
         hardwareQueue = new HardwareQueue();
 
         sensors = new Sensors(this);
         drivetrain = new Drivetrain(this);
+        intake = new Intake(this);
+        shooter = new Shooter(this);
 
         TelemetryUtil.setup();
         LogUtil.reset();
     }
 
-    public void update(){
+    public void update() {
         START_LOOP();
 
         sensors.update();
-        drivetrain.update();
 
+        drivetrain.update();
+        intake.update();
+        shooter.update();
+
+        hardwareQueue.update();
         this.updateTelemetry();
     }
 
@@ -60,9 +68,9 @@ public class Robot {
         } while (!this.stopChecker.getAsBoolean() && func.getAsBoolean());
     }
 
-    public void updateTelemetry(){
+    public void updateTelemetry() {
         Canvas canvas = TelemetryUtil.packet.fieldOverlay();
-        for(Consumer<Canvas> task : canvasDrawTasks) task.accept(canvas);
+        for (Consumer<Canvas> task : canvasDrawTasks) task.accept(canvas);
 
         TelemetryUtil.packet.put("Loop Time", GET_LOOP_TIME());
 

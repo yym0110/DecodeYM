@@ -10,8 +10,7 @@ import java.util.List;
  * Set of helper functions for drawing Road Runner paths and trajectories on dashboard canvases.
  */
 public class DashboardUtil {
-    private static final double ROBOT_RADIUS = 7; // in
-    private static final double POLE_RADIUS = 0.5; // in
+    private static final double ROBOT_RADIUS = 9; // in
 
     public static void drawField() {
         final int[] mirror = {1, -1};
@@ -79,24 +78,5 @@ public class DashboardUtil {
         double x1 = pose.getX() + v.getX() / 2, y1 = pose.getY() + v.getY() / 2;
         double x2 = pose.getX() + v.getX(), y2 = pose.getY() + v.getY();
         canvas.strokeLine(x1, y1, x2, y2);
-    }
-
-    public static void drawRobot(Canvas canvas, Pose2d pose, double ext, String color) {
-        canvas.setStroke(color);
-        double x = pose.getX(), y = pose.getY();
-        double s = Math.sin(pose.heading), c = Math.cos(pose.heading);
-        double re1 = 6, re2 = 9 + ext, rh = 4;
-        double x1 = x + c * re1, y1 = y + s * re1;
-        double x2 = x + c * re2, y2 = y + s * re2;
-        double xh = x + c * rh, yh = y + s * rh;
-        canvas.strokeCircle(x, y, ROBOT_RADIUS);
-        canvas.strokeCircle(x, y, 0.5);
-        canvas.strokeLine(x, y, xh, yh);
-        canvas.strokeLine(x1, y1, x2, y2);
-        canvas.strokeCircle(x2, y2, 0.5);
-    }
-
-    public static void drawPole(Canvas canvas, Pose2d pose) {
-        canvas.strokeCircle(pose.getX(), pose.getY(), POLE_RADIUS);
     }
 }

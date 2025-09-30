@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-
 @Config
 public class LogUtil {
     private static Datalogger datalogger = null;
@@ -37,16 +36,9 @@ public class LogUtil {
     // These are all of the fields that we want in the datalog.
     // Note that order here is NOT important. The order is important in the setFields() call below
     //public static Datalogger.GenericField loopTime = new Datalogger.GenericField("loopTime");
-    //public static Datalogger.GenericField robotState = new Datalogger.GenericField("robotState");
     public static StateField intakeState = new StateField("intakeState");
-    public static StateField depositState = new StateField("depositState");
-    public static Datalogger.GenericField extendoCurrentPos = new Datalogger.GenericField("extendoCurrentPos");
-    public static Datalogger.GenericField extendoTargetPos = new Datalogger.GenericField("extendoTargetPos");
-    public static Datalogger.GenericField intakeClawRotationAngle = new Datalogger.GenericField("intakeClawRotationAngle");
-    public static Datalogger.GenericField intakeTurretRotationAngle = new Datalogger.GenericField("intakeTurretRotationAngle");
-    public static Datalogger.GenericField intakeClawGrab = new Datalogger.GenericField("intakeClawGrab");
-    public static Datalogger.GenericField slidesCurrentPos = new Datalogger.GenericField("slidesCurrentPos");
-    public static Datalogger.GenericField slidesTargetPos = new Datalogger.GenericField("slidesTargetPos");
+    public static Datalogger.GenericField turretAngle = new Datalogger.GenericField("turretAngle");
+    public static Datalogger.GenericField hoodAngle = new Datalogger.GenericField("hoodAngle");
     public static Datalogger.GenericField driveState = new Datalogger.GenericField("driveState");
     public static Datalogger.GenericField driveCurrentX = new Datalogger.GenericField("driveCurrentX");
     public static Datalogger.GenericField driveCurrentY = new Datalogger.GenericField("driveCurrentY");
@@ -57,7 +49,7 @@ public class LogUtil {
 
     private static int loopCountBeforeWrite;
 
-    public static boolean DISABLED = false;
+    public static boolean DISABLED = true;
     public static boolean stateTransition = false;
     public static boolean drivePositionReset = false;
 
@@ -73,7 +65,7 @@ public class LogUtil {
         long timeNow = System.currentTimeMillis();
         String fileName = "Log_" + timeNow + "_"
             + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US).format(new Date(timeNow))
-            + "_CAT6_" + Globals.RUNMODE.toString();
+            + "_CAT1_Decode_" + Globals.RUNMODE.toString();
         TelemetryUtil.packet.put("LogUtil : filename", fileName);
 
         if (datalogger != null) throw new IllegalStateException("LogUtil was already initialized");
@@ -89,14 +81,8 @@ public class LogUtil {
             // the fields is the order in which they will appear in the log.
             .setFields(
                 intakeState,
-                depositState,
-                extendoCurrentPos,
-                extendoTargetPos,
-                intakeClawRotationAngle,
-                intakeTurretRotationAngle,
-                intakeClawGrab,
-                slidesCurrentPos,
-                slidesTargetPos,
+                turretAngle,
+                hoodAngle,
                 driveCurrentX,
                 driveCurrentY,
                 driveCurrentAngle,

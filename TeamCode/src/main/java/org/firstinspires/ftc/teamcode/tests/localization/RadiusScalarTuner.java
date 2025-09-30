@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests.localization;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_WIDTH;
-import static org.firstinspires.ftc.teamcode.utils.Globals.TRACK_WIDTH;
 
 import android.util.Log;
 
@@ -11,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
-import org.firstinspires.ftc.teamcode.subsystems.drive.OldDrivetrain;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 

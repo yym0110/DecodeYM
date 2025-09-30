@@ -97,18 +97,7 @@ public class Drivetrain {
             4, 5, sensors
         );
 
-        brakePad = new nPriorityServo(
-            new Servo[] {robot.hardwareMap.get(Servo.class, "brakePad")},
-            "brakePad",
-            nPriorityServo.ServoType.HITEC,
-            0, 1, 0,
-            new boolean[] {false},
-            1.0, 5
-        );
-
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
-        hardwareQueue.addDevice(brakePad);
-        setBrakePad(false);
 
         configureMotors();
 
@@ -470,7 +459,7 @@ public class Drivetrain {
             }
         }
         TelemetryUtil.packet.put("TURN", turn);
-        Vector2 move = new Vector2(fwd, strafe)
+        Vector2 move = new Vector2(fwd, strafe);
         setMoveVector(move, turn);
 
         TelemetryUtil.packet.put("fwd", fwd);

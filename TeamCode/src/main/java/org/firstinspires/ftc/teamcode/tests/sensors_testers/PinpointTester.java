@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.sensors;
+package org.firstinspires.ftc.teamcode.tests.sensors_testers;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

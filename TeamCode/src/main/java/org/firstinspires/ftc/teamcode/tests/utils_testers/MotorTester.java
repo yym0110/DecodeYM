@@ -24,7 +24,6 @@ import java.util.ArrayList;
 @Config
 @TeleOp(group = "Test")
 public class MotorTester extends LinearOpMode {
-
     @Override
     public void runOpMode() throws InterruptedException {
         Globals.RUNMODE = RunMode.TESTER;
@@ -56,7 +55,7 @@ public class MotorTester extends LinearOpMode {
 
         while (!isStopRequested()) {
             START_LOOP();
-            robot.drivetrain.resetMinPowersToOvercomeFriction();
+            //robot.drivetrain.resetMinPowersToOvercomeFriction();
 
             if (buttonY.isClicked(gamepad1.y)) {
                 motors.get(motorIndex).setTargetPower(0.0);

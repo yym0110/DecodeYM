@@ -23,7 +23,7 @@ public class Shooter {
         cloth:
      */
     private final nPriorityServo turret, hood, cloth;
-    private final PriorityMotor flywheel;
+    public final PriorityMotor flywheel;
 
     public static PID velocityPID = new PID (1.0, 0.0, 0.0);
     private double targetVelocity = 0.0;
@@ -44,7 +44,7 @@ public class Shooter {
         );
 
         hood = new nPriorityServo(
-            new Servo[]{robot.hardwareMap.get(Servo.class, "hood")},
+            new Servo[]{robot.hardwareMap.get(Servo.class, "hood1"), robot.hardwareMap.get(Servo.class,"hood2")},
             "hood", nPriorityServo.ServoType.AXON_MINI,
             0, 1, 0.5,
             new boolean[] {false},
@@ -62,16 +62,16 @@ public class Shooter {
         robot.hardwareQueue.addDevices(flywheel, cloth, hood, turret);
     }
 
-    double error;
-
     public void update() {
         // TODO Flywheel velocity PID
-        error = flywheel.getVelocity() - targetVelocity;
-        setShooterPower(velocityPID.update(error, 0.0, 1.0));
+        double error = targetVelocity - robot.sensors.getFlywheelVelocity();
+        double pow = velocityPID.update(error, 0.0, 1.0);
+        setShooterPower(pow);
 
-        TelemetryUtil.packet.put("Flywheel Current Velocity", flywheel.getVelocity());
+        TelemetryUtil.packet.put("Flywheel Current Velocity", robot.sensors.getFlywheelVelocity());
         TelemetryUtil.packet.put("Flywheel Target Velocity", targetVelocity);
         TelemetryUtil.packet.put("Flywheel Velocity Error", error);
+        TelemetryUtil.packet.put("Flywheel PID Power", pow);
     }
 
     /**
@@ -96,9 +96,9 @@ public class Shooter {
 
     public void setClothPos(double target_angle){cloth.setTargetAngle(target_angle);}
 
-    public void setShooterPower(double power){flywheel.setTargetPower(power);}
-    public void setTargetVelocity(double targetVelocity){this.targetVelocity = targetVelocity;}
-    public double getTargetVelocity(){return targetVelocity;}
+    public void setShooterPower(double power) { flywheel.setTargetPower(power); }
+    public void setTargetVelocity(double targetVelocity) { this.targetVelocity = targetVelocity; }
+    public double getTargetVelocity() { return targetVelocity; }
 
     public void aimAt(double target_x, double target_y, double target_z) { // TODO Calculations
         double curr_x = this.robot.sensors.getOdometryPosition().x;

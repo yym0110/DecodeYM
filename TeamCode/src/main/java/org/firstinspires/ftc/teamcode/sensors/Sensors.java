@@ -31,6 +31,8 @@ public class Sensors {
     private long lastTime = System.currentTimeMillis();
     private Vector2 instantVelo = new Vector2();
 
+    private double flywheelVelocity;
+
     public Sensors(Robot robot) {
         this.robot = robot;
 
@@ -64,8 +66,11 @@ public class Sensors {
         isStopped = confidence >= confidenceThresh;
     }
 
+    public double getFlywheelVelocity() { return flywheelVelocity; }
+
     public void update() {
         odometry.update();
+        flywheelVelocity = robot.shooter.flywheel.getVelocity();
 
         if (System.currentTimeMillis() - lastVoltageUpdatedTime > voltageUpdateTime) {
             voltage = robot.hardwareMap.voltageSensor.iterator().next().getVoltage();
@@ -114,6 +119,8 @@ public class Sensors {
 
         Pose2d currentPos = getOdometryPosition();
         Pose2d vel = getVelocity();
+        TelemetryUtil.packet.put("Shooter : flywheel velocity", flywheelVelocity);
+        LogUtil.flywheelVelocity.set(flywheelVelocity);
         TelemetryUtil.packet.put("Pinpoint : X", currentPos.x);
         TelemetryUtil.packet.put("Pinpoint : Y", currentPos.y);
         TelemetryUtil.packet.put("Pinpoint : Angle (deg)", Math.toDegrees(currentPos.heading));

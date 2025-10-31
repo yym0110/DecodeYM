@@ -39,8 +39,8 @@ public class Robot {
         hardwareQueue = new HardwareQueue();
 
         sensors = new Sensors(this);
-        drivetrain = new Drivetrain(this);
-        intake = new Intake(this);
+        //drivetrain = new Drivetrain(this);
+        //intake = new Intake(this);
         shooter = new Shooter(this);
 
         TelemetryUtil.setup();
@@ -52,8 +52,8 @@ public class Robot {
 
         sensors.update();
 
-        drivetrain.update();
-        intake.update();
+        //drivetrain.update();
+        //intake.update();
         shooter.update();
 
         hardwareQueue.update();

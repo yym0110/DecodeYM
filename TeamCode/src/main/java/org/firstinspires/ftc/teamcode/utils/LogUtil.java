@@ -38,6 +38,7 @@ public class LogUtil {
     //public static Datalogger.GenericField loopTime = new Datalogger.GenericField("loopTime");
     public static StateField intakeState = new StateField("intakeState");
     public static Datalogger.GenericField turretAngle = new Datalogger.GenericField("turretAngle");
+    public static Datalogger.GenericField flywheelVelocity = new Datalogger.GenericField("flywheelVelocity");
     public static Datalogger.GenericField hoodAngle = new Datalogger.GenericField("hoodAngle");
     public static Datalogger.GenericField driveState = new Datalogger.GenericField("driveState");
     public static Datalogger.GenericField driveCurrentX = new Datalogger.GenericField("driveCurrentX");
@@ -82,6 +83,7 @@ public class LogUtil {
             .setFields(
                 intakeState,
                 turretAngle,
+                flywheelVelocity,
                 hoodAngle,
                 driveCurrentX,
                 driveCurrentY,

@@ -23,7 +23,7 @@ import java.util.Queue;
 @Config
 public class Sensors {
     private final Robot robot;
-    private final GoBildaPinpointDriver odometry;
+    private GoBildaPinpointDriver odometry;
 
     private Pose2d currentPose, lastPose;
     private long currentTime, lastTime = System.currentTimeMillis();
@@ -42,7 +42,7 @@ public class Sensors {
     2 -> purple ball
      */
     private ArrayList<Integer> balls;
-    private int[] colors;
+    private int[] colors = {0, 0, 0};
     private REVColorSensorV3 colorSensorV3;
     private boolean colorToggle = false, fullChamber = false;
 
@@ -56,16 +56,21 @@ public class Sensors {
     public Sensors(Robot robot) {
         this.robot = robot;
 
+        // Disable for Turret Testing (not wired yet)
+        /*
         odometry = robot.hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         odometry.setOffsets(70, 65);
         odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         odometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        */
 
+        /*
         colorSensorV3 = robot.hardwareMap.get(REVColorSensorV3.class, "indexSensor");
         colorSensorV3.configureLS(REVColorSensorV3.LSResolution.SIXTEEN, REVColorSensorV3.LSMeasureRate.m25s, REVColorSensorV3.LSGain.THREE);
         colorSensorV3.sendControlRequest(new REVColorSensorV3.ControlRequest()
                 .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED)
                 .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED));
+         */
         balls = new ArrayList<Integer>();
         balls.add(0);
         balls.add(0);
@@ -75,15 +80,16 @@ public class Sensors {
     }
 
     public void update() {
-        odometry.update();
+        // odometry.update();
 
-        lastPose = currentPose.clone();
-        currentPose = odometry.getPosition();
+        lastPose = /*currentPose.clone();*/ new Pose2d(0, 0, 0);
+        currentPose = /*odometry.getPosition();*/ new Pose2d(0, 0, 0);
 
         currentTime = System.currentTimeMillis();
         vel.x = (currentPose.x - lastPose.x) / (currentTime - lastTime);
         vel.y = (currentPose.y - lastPose.y) / (currentTime - lastTime);
         lastTime = currentTime;
+        stopConfidence();
 
         flywheelVelocity = robot.shooter.flywheel.getVelocity();
 
@@ -117,7 +123,7 @@ public class Sensors {
     public void recalibrate() { odometry.recalibrateIMU(); }
 
     public void setOdometryPosition(Pose2d pose2d) {
-        odometry.setPosition(pose2d);
+        // odometry.setPosition(pose2d);
     }
 
     public Pose2d getOdometryPosition() { return currentPose; }

@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.utils.ButtonToggle;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
+import org.firstinspires.ftc.teamcode.utils.Vector2;
 import org.firstinspires.ftc.teamcode.utils.Vector3;
 
 import java.io.File;
@@ -49,7 +50,7 @@ public class DecelTuner extends LinearOpMode {
                 gamepad1.rumble(1.0, 1.0, 100);
                 robot.drivetrain.setMotorPowers(0, 0, 0, 0);
 
-                if (robot.sensors.getVelocity().toVec3().getMag() <= 0.5) {
+                if (robot.sensors.getVelocity().mag() <= 0.5) {
                     Vector3 end = robot.drivetrain.getPoseEstimate().toVec3();
                     delta = Vector3.subtract(end, start.toVec3()).toPose();
                     buffer += pose2dCSV(vnaught) + "," + pose2dCSV(delta) + "\n";
@@ -58,7 +59,8 @@ public class DecelTuner extends LinearOpMode {
             }
 
             if (x) {
-                vnaught = robot.sensors.getVelocity();
+                Vector2 vel = robot.sensors.getVelocity();
+                vnaught = new Pose2d(vel.x, vel.y, Math.atan2(vel.x, vel.y));
                 start = robot.drivetrain.getPoseEstimate();
                 stopToggle = true;
             }

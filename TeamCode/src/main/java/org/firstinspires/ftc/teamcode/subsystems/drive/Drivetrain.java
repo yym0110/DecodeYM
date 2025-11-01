@@ -202,8 +202,9 @@ public class Drivetrain {
         }
 
         Pose2d estimate = sensors.getOdometryPosition();
-        ROBOT_POSITION = new Pose2d(estimate.x, estimate.y,estimate.heading);
-        ROBOT_VELOCITY = sensors.getVelocity();
+        ROBOT_POSITION = new Pose2d(estimate.x, estimate.y, estimate.heading);
+        Vector2 vel = sensors.getVelocity();
+        ROBOT_VELOCITY = new Pose2d(vel.x, vel.y, Math.atan2(vel.x, vel.y));
 
         if (path != null) {
             //update initial variables + states. pathIndex is the index of the next defined point in the spline

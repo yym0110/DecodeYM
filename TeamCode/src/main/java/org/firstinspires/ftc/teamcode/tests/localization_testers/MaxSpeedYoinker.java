@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.Vector2;
 import org.firstinspires.ftc.teamcode.utils.Vector3;
 
 @TeleOp
@@ -26,11 +27,11 @@ public class MaxSpeedYoinker extends LinearOpMode {
 
         while (opModeIsActive()) {
             robot.drivetrain.drive(gamepad1);
-            Pose2d velocity = robot.sensors.getVelocity();
+            Vector2 velocity = robot.sensors.getVelocity();
             Vector3 sV = new Vector3(
                     velocity.x,
                     velocity.y,
-                    velocity.heading * Globals.ROBOT_WIDTH / 2
+                    Math.atan2(velocity.x, velocity.y) * Globals.ROBOT_WIDTH / 2
             );
 
             if (sV.x > maxXSpeed) {

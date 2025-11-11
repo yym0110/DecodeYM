@@ -63,14 +63,13 @@ public class Sensors {
         odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         odometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
         */
-
-        /*
+/*
         colorSensorV3 = robot.hardwareMap.get(REVColorSensorV3.class, "indexSensor");
         colorSensorV3.configureLS(REVColorSensorV3.LSResolution.SIXTEEN, REVColorSensorV3.LSMeasureRate.m25s, REVColorSensorV3.LSGain.THREE);
         colorSensorV3.sendControlRequest(new REVColorSensorV3.ControlRequest()
                 .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED)
                 .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED));
-         */
+*/
         balls = new ArrayList<Integer>();
         balls.add(0);
         balls.add(0);
@@ -93,7 +92,7 @@ public class Sensors {
 
         flywheelVelocity = robot.shooter.flywheel.getVelocity();
 
-        if(colorToggle){
+        if (colorToggle) {
             colors = colorSensorV3.readLSRGBRAW();
         }
         ballConfidence();

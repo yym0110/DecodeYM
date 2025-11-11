@@ -6,31 +6,39 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
+import org.firstinspires.ftc.teamcode.utils.Globals;
+import org.firstinspires.ftc.teamcode.utils.RunMode;
 
 @Config
 @TeleOp(group = "IntakeTester")
 public class IntakeTester extends LinearOpMode {
-    private Robot robot;
-    private Intake intake;
-
-    public static double feedServoPower = 0.0, intakeMotorPower = 0.0;
+    public static double feedPower = 0.0, intakePower = 0.0;
     public static boolean updateValues = false;
 
-    public void runOpMode(){
-        robot = new Robot(hardwareMap);
-        intake = robot.intake;
+    public void runOpMode() {
+        Globals.RUNMODE = RunMode.TESTER;
+        Robot robot = new Robot(hardwareMap);
+        Intake intake = robot.intake;
+        intake.state = Intake.State.TEST;
 
-        while(opModeInInit()){
+        while (opModeInInit()) {
             robot.update();
         }
 
         // TODO: Add Color Sensor once wired
-        while(opModeIsActive()){
-            if(updateValues){
-                intake.feedServo.setTargetPower(feedServoPower);
-                intake.rollerMotor.setTargetPower(intakeMotorPower);
-                updateValues = !updateValues;
+        while (!isStopRequested()) {
+            if (gamepad1.x) intake.feed.setTargetPower(0);
+            if (gamepad1.y) intake.feed.setTargetPower(0.5);
+            if (gamepad1.a) intake.roller.setTargetPower(0);
+            if (gamepad1.b) intake.roller.setTargetPower(0.75);
+
+            if (updateValues) {
+                intake.feed.setTargetPower(feedPower);
+                intake.roller.setTargetPower(intakePower);
+                updateValues = false;
             }
+
+            robot.update();
         }
     }
 }

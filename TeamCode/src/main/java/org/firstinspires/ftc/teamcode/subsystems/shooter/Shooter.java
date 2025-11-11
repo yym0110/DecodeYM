@@ -46,15 +46,15 @@ public class Shooter {
         hood = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "hood1"), robot.hardwareMap.get(Servo.class,"hood2")},
             "hood", nPriorityServo.ServoType.AXON_MINI,
-            0, 1, 0.5,
-            new boolean[] {false},
+            0, 0.38, 0.005,
+            new boolean[] {false, true},
             2, 5
         );
 
         turret = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "turret1"), robot.hardwareMap.get(Servo.class,"turret2")},
             "turret", nPriorityServo.ServoType.AXON_MINI,
-            0, 1, 0.5,
+            0.48, 0.51, 0.495,
             new boolean[] {false, false},
             2, 5
         );
@@ -63,14 +63,14 @@ public class Shooter {
     }
 
     public void update() {
-        double error = targetVelocity - robot.sensors.getFlywheelVelocity();
-        double pow = velocityPID.update(error, 0.0, 1.0);
-        setShooterPower(pow);
+//        double error = targetVelocity - robot.sensors.getFlywheelVelocity();
+//        double pow = velocityPID.update(error, 0.0, 1.0);
+//        setShooterPower(pow);
 
-        TelemetryUtil.packet.put("Flywheel Current Velocity", robot.sensors.getFlywheelVelocity());
+//        TelemetryUtil.packet.put("Flywheel Current Velocity", robot.sensors.getFlywheelVelocity());
         TelemetryUtil.packet.put("Flywheel Target Velocity", targetVelocity);
-        TelemetryUtil.packet.put("Flywheel Velocity Error", error);
-        TelemetryUtil.packet.put("Flywheel PID Power", pow);
+//        TelemetryUtil.packet.put("Flywheel Velocity Error", error);
+//        TelemetryUtil.packet.put("Flywheel PID Power", pow);
     }
 
     /**

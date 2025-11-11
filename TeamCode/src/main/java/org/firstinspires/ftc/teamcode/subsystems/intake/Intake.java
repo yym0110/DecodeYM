@@ -18,7 +18,8 @@ public class Intake {
     public enum State {
         IDLE,
         INTAKE,
-        SHOOT_FEED
+        SHOOT_FEED,
+        TEST
     }
 
     public State state = State.IDLE;
@@ -29,7 +30,7 @@ public class Intake {
         roller = new PriorityMotor(
             new DcMotorEx[] {robot.hardwareMap.get(DcMotorEx.class, "roller")},
             "roller", 2, 5,
-            new double[] {1}, robot.sensors
+            new double[] {-1}, robot.sensors
         );
 
         feed = new PriorityMotor (
@@ -53,7 +54,7 @@ public class Intake {
                 // TODO Disable Color Detection?
                 robot.sensors.toggleColor(false);
 
-                if(requestIntake){
+                if (requestIntake) {
                     requestIntake = false;
                     state = State.INTAKE;
                 }
@@ -83,12 +84,15 @@ public class Intake {
                     state = State.IDLE;
                 }
             }
+            case TEST: {
+                break;
+            }
         }
 
         this.updateTelemetry();
     }
 
-    public void reqIntake(boolean req){
+    public void reqIntake(boolean req) {
         requestIntake = req;
     }
 

@@ -25,6 +25,9 @@ public class ShooterTester extends LinearOpMode {
         }
 
         while (!isStopRequested()) {
+            robot.intake.roller.setTargetPower(1.0);
+            robot.intake.feed.setTargetPower(0.7);
+
             shooter.setTurretAngle(turretAngle);
             shooter.setHoodAngle(hoodAngle);
 

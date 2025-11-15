@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -18,19 +19,18 @@ import java.io.IOException;
 
 @TeleOp
 public class LocalizationTest extends LinearOpMode {
+
+    Robot robot;
     @Override
     public void runOpMode() throws InterruptedException {
 //        Vision vision = new Vision(hardwareMap, telemetry, false, false, false);
-        Robot robot = new Robot(hardwareMap);
-        Sensors sensors = robot.sensors;
-
+        robot = new Robot(hardwareMap);
         Globals.RUNMODE = RunMode.TESTER;
         ButtonToggle bty = new ButtonToggle();
 
         waitForStart();
 
         robot.drivetrain.setPoseEstimate(new Pose2d(0, 0, 0));
-
 
         File file = AppUtil.getInstance().getSettingsFile("deceldata.csv");
         FileWriter fw;
@@ -43,10 +43,15 @@ public class LocalizationTest extends LinearOpMode {
 
         while(!isStopRequested()) {
             robot.drivetrain.drive(gamepad1);
+
             Pose2d pos = robot.drivetrain.getPoseEstimate();
-            TelemetryUtil.packet.put("x: ", pos.x);
-            TelemetryUtil.packet.put("y: ", pos.y);
-            TelemetryUtil.packet.put("heading: ", pos.heading);
+            TelemetryUtil.packet.put("pinpoint x: ", pos.x);
+            TelemetryUtil.packet.put("pinpoint y: ", pos.y);
+            TelemetryUtil.packet.put("pinpoint heading: ", pos.heading);
+
+            TelemetryUtil.packet.put("odo encoder 0", ((PriorityMotor) robot.hardwareQueue.getDevice("rightRear")).motor[0].getCurrentPosition());
+            TelemetryUtil.packet.put("odo encoder 1", ((PriorityMotor) robot.hardwareQueue.getDevice("leftRear")).motor[0].getCurrentPosition());
+            TelemetryUtil.packet.put("odo encoder 2", ((PriorityMotor) robot.hardwareQueue.getDevice("leftFront")).motor[0].getCurrentPosition());
 
             robot.update();
 

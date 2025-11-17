@@ -23,6 +23,7 @@ public class Teleop extends LinearOpMode {
         boolean intakeReversed = false;
         boolean intakeOn = false;
         boolean flywheelOn = false;
+        double angle = 0.46;
 
         robot.intake.state = Intake.State.TEST;
 
@@ -56,6 +57,13 @@ public class Teleop extends LinearOpMode {
             } else {
                 robot.intake.feed.setTargetPower(0);
                 robot.shooter.setShooterBlocker(1);
+            }
+            if (gamepad1.dpad_up) {
+                angle += 0.05;
+                robot.shooter.setTurretAngle(angle);
+            } else if (gamepad1.dpad_down){
+                angle -= 0.05;
+                robot.shooter.setTurretAngle(angle);
             }
 
             robot.drivetrain.drive(gamepad1);

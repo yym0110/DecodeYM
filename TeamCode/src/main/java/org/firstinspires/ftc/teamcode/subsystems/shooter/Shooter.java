@@ -15,10 +15,9 @@ import org.firstinspires.ftc.teamcode.utils.priority.nPriorityServo;
 @Config
 public class Shooter {
     private final Robot robot;
-
     private final DcMotorEx ms1, ms2;
     public final PriorityMotor flywheel;
-    private final nPriorityServo turret, hood/*, cloth*/;
+    private final nPriorityServo flywheelBlocker, turret, hood/*, cloth*/;
 
     // velocity is in inches / second
     public static PID velocityPID = new PID (0.005, 0.03, 0.0005);
@@ -52,12 +51,19 @@ public class Shooter {
         turret = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "turret1"), robot.hardwareMap.get(Servo.class,"turret2")},
             "turret", nPriorityServo.ServoType.AXON_MINI,
-            0.48, 0.51, 0.495,
+            0.176, 0.755, 0.46,
             new boolean[] {false, false},
             2, 5
         );
 
-        robot.hardwareQueue.addDevices(flywheel/*, cloth*/, hood, turret);
+        flywheelBlocker = new nPriorityServo(
+                new Servo[]{robot.hardwareMap.get(Servo.class, "flywheelBlocker")},
+                "flywheelBlocker", nPriorityServo.ServoType.AXON_MICRO,
+                0, 0.724, 0.36,
+                new boolean[] {false},
+                2, 5
+        );
+        robot.hardwareQueue.addDevices(flywheel/*, cloth*/, hood, turret, flywheelBlocker);
     }
 
     public void update() {
@@ -97,6 +103,7 @@ public class Shooter {
     public void setShooterPower(double power) { flywheel.setTargetPower(power); }
     public void setTargetVelocity(double targetVelocity) { this.targetVelocity = targetVelocity; }
     public double getTargetVelocity() { return targetVelocity; }
+    public void setShooterBlocker(double angle){ flywheelBlocker.setTargetAngle(angle); }
 
     public void aimAt(double target_x, double target_y, double target_z) { // TODO Calculations
         double curr_x = this.robot.sensors.getOdometryPosition().x;

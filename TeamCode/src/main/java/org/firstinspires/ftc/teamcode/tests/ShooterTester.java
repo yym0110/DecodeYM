@@ -14,15 +14,15 @@ import org.firstinspires.ftc.teamcode.utils.RunMode;
 @Config
 @TeleOp(group = "Test")
 public class ShooterTester extends LinearOpMode {
-    public static double turretAngle = 0.0, hoodAngle = 0.7, flywheelVelocity = 0.0, rollerPower = 0.7, feedPower = 0.5;
+    public static double turretAngle = 0.0, hoodAngle = 0.7, flywheelVelocity = 0.0, rollerPower = 0.7, feedPower = 0.5, latchAngle = 0;
     public static boolean updateVelocity = false;
+    public static boolean updateLatch = false;
 
     public void runOpMode() {
         Globals.RUNMODE = RunMode.TESTER;
         Robot robot = new Robot(hardwareMap);
         Shooter shooter = robot.shooter;
         robot.intake.state = Intake.State.TEST;
-
         ButtonToggle up = new ButtonToggle();
         ButtonToggle down = new ButtonToggle();
 
@@ -31,24 +31,13 @@ public class ShooterTester extends LinearOpMode {
         }
 
         while (!isStopRequested()) {
-            if (gamepad1.x) robot.intake.feed.setTargetPower(-feedPower);
-            else if (gamepad1.y) robot.intake.feed.setTargetPower(feedPower);
-            else robot.intake.feed.setTargetPower(0);
-            if (gamepad1.a) robot.intake.roller.setTargetPower(-rollerPower);
-            else if (gamepad1.b) robot.intake.roller.setTargetPower(rollerPower);
-            else robot.intake.roller.setTargetPower(0);
-
-            if (up.isClicked(gamepad1.dpad_up)) {
-                flywheelVelocity += 5;
-                updateVelocity = true;
-            }
-            if (down.isClicked(gamepad1.dpad_down)) {
-                flywheelVelocity -= 5;
-                updateVelocity = true;
-            }
 
             shooter.setTurretAngle(turretAngle);
             shooter.setHoodAngle(hoodAngle);
+            robot.intake.roller.setTargetPower(0.9);
+            robot.intake.feed.setTargetPower(0.7);
+            shooter.setShooterBlocker(latchAngle);
+
 
             if (updateVelocity) {
                 shooter.setTargetVelocity(flywheelVelocity);

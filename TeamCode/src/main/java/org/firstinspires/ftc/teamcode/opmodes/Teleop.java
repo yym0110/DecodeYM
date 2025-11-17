@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -13,12 +12,6 @@ import org.firstinspires.ftc.teamcode.utils.RunMode;
 
 @TeleOp(name = "A. Teleop")
 public class Teleop extends LinearOpMode {
-    private enum Direction {
-        FORWARD,
-        REVERSE,
-        OFF
-    }
-
     public void runOpMode() {
         Globals.RUNMODE = RunMode.TELEOP;
         Robot robot = new Robot(hardwareMap);
@@ -26,7 +19,10 @@ public class Teleop extends LinearOpMode {
 
         ButtonToggle lb1 = new ButtonToggle();
         ButtonToggle a1 = new ButtonToggle();
-        Direction intakeDirection = Direction.OFF;
+        ButtonToggle b1 = new ButtonToggle();
+        boolean intakeReversed = false;
+        boolean intakeOn = false;
+        boolean flywheelOn = false;
 
         robot.intake.state = Intake.State.TEST;
 
@@ -40,20 +36,27 @@ public class Teleop extends LinearOpMode {
         while (!isStopRequested()) {
             robot.update();
 
-            if (lb1.isClicked(gamepad1.left_bumper)) intakeDirection = intakeDirection == Direction.FORWARD ? Direction.OFF : Direction.FORWARD;
-            if (a1.isClicked(gamepad1.a)) intakeDirection = intakeDirection == Direction.REVERSE ? Direction.OFF : Direction.REVERSE;
-            if (intakeDirection == Direction.FORWARD) robot.intake.roller.setTargetPower(0.8);
-            else if (intakeDirection == Direction.REVERSE) robot.intake.roller.setTargetPower(-0.8);
-            else robot.intake.roller.setTargetPower(0);
+            if (lb1.isClicked(gamepad1.left_bumper)) intakeOn = !intakeOn;
+            if (a1.isClicked(gamepad1.a)) {
+                intakeReversed = intakeOn && !intakeReversed;
+                intakeOn = true;
+            }
+            if (intakeOn) {
+                if (intakeReversed) robot.intake.roller.setTargetPower(-0.8);
+                else robot.intake.roller.setTargetPower(0.8);
+            } else robot.intake.roller.setTargetPower(0);
 
-            //robot.shooter.setShooterPower(gamepad1.right_trigger);
-            robot.shooter.setTargetVelocity(gamepad1.right_trigger * 80);
+            if (b1.isClicked(gamepad1.b)) {
+                flywheelOn = !flywheelOn;
+                robot.shooter.setTargetVelocity(flywheelOn ? 100 : 0);
+            }
             if (gamepad1.right_bumper) robot.intake.feed.setTargetPower(0.5);
             else robot.intake.feed.setTargetPower(0);
 
             robot.drivetrain.drive(gamepad1);
 
-            telemetry.addData("intakeDirection", intakeDirection);
+            telemetry.addData("intakeOn", flywheelOn);
+            telemetry.addData("intakeReversed", intakeReversed);
             telemetry.addData("intakePower", robot.intake.roller.getPower());
             telemetry.update();
         }

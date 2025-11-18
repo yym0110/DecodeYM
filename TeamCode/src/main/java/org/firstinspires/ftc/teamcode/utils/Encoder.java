@@ -19,6 +19,15 @@ public class Encoder {
         this.scaleFactor = scaleFactor;
     }
 
+    public Encoder (Pose2d point, double scaleFactor, double ticksToInches){
+        x = point.getX();
+        y = point.getY();
+        this.scaleFactor = scaleFactor;
+        this.ticksToInches = ticksToInches;
+        currentVal = 0;
+        lastVal = 0;
+    }
+
     public void update(int currentPos) {
         lastVal = currentVal;
         currentVal = currentPos;

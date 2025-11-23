@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 public class BlueGoalAuto extends LinearOpMode {
     Robot robot;
     long shooterTimer;
+    long stallTimer;
 
     @Override
     public void runOpMode(){
@@ -33,11 +34,11 @@ public class BlueGoalAuto extends LinearOpMode {
         }
 
         TelemetryUtil.packet.put("Auto Stage", "Step 1");
-        robot.drivetrain.goToPoint(new Pose2d(-36, -36, Math.PI * 3/4), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(-36, -36, -Math.PI * 3/4), 0.5);
         robot.shooter.setShooter(Shooter.State.CLOSE);
         robot.shooter.setShooterBlocker(true);
         robot.update();
-        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && !robot.shooter.atVel());
+        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
 
         TelemetryUtil.packet.put("Auto Stage", "Step 2");
         robot.shooter.setShooterBlocker(false);
@@ -58,23 +59,24 @@ public class BlueGoalAuto extends LinearOpMode {
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);
-        robot.drivetrain.goToPoint(new Pose2d(-9, -30, Math.PI / 2), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(-15, -33, 0), 0.5);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 5");
+        stallTimer = System.currentTimeMillis();
         robot.intake.roller.setTargetPower(0.9);
         robot.intake.feed.setTargetPower(0.4);
-        robot.drivetrain.goToPoint(new Pose2d(-15, -60, Math.PI / 2), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(-21, -60, -Math.PI / 2), 0.2);
         robot.update();
-        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
+        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && System.currentTimeMillis() - stallTimer <= 2000);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 6");
-        robot.drivetrain.goToPoint(new Pose2d(-36, -36, Math.PI * 3/4), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(-36, -36, -Math.PI * 3/4), 0.5);
         robot.shooter.setShooter(Shooter.State.CLOSE);
         robot.shooter.setShooterBlocker(true);
         robot.update();
-        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && !robot.shooter.atVel());
+        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
 
         TelemetryUtil.packet.put("Auto Stage", "Step 7");
         robot.shooter.setShooterBlocker(false);
@@ -95,24 +97,24 @@ public class BlueGoalAuto extends LinearOpMode {
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);
-        robot.drivetrain.goToPoint(new Pose2d(3, -30, Math.PI / 2), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(9, -30, -Math.PI / 2), 0.5);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
 
-        /*
         TelemetryUtil.packet.put("Auto Stage", "Step 11");
+        stallTimer = System.currentTimeMillis();
         robot.intake.roller.setTargetPower(0.9);
         robot.intake.feed.setTargetPower(0.4);
-        robot.drivetrain.goToPoint(new Pose2d(9, 72.0 - ROBOT_LENGTH / 2.0, Math.PI / 2), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(15, -(72.0 - ROBOT_LENGTH / 2.0), -Math.PI / 2), 0.5);
         robot.update();
-        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
+        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && System.currentTimeMillis() - stallTimer <= 2000);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 12");
-        robot.drivetrain.goToPoint(new Pose2d(-6, 6, Math.PI * 3/4), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(-8, -8, -Math.PI * 2/3), 0.5);
         robot.shooter.setShooter(Shooter.State.MID);
         robot.shooter.setShooterBlocker(true);
         robot.update();
-        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && !robot.shooter.atVel());
+        robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
 
         TelemetryUtil.packet.put("Auto Stage", "Step 13");
         robot.shooter.setShooterBlocker(false);
@@ -133,10 +135,9 @@ public class BlueGoalAuto extends LinearOpMode {
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);
-        robot.drivetrain.goToPoint(new Pose2d(0, 12, 0), 0.5);
+        robot.drivetrain.goToPoint(new Pose2d(0, -24, 0), 0.5);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
-        */
 
         AUTO_ENDING_POSE = ROBOT_POSITION;
         robot.waitWhile(this::isStopRequested);

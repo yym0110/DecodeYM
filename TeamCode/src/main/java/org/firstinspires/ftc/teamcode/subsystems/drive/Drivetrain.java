@@ -178,11 +178,11 @@ public class Drivetrain {
     public static double centripetalScalar = 0.2;
 
     private Pose2d targetPoint = new Pose2d (0, 0, 0);
-    public static PID xPID = new PID (0.1, 0.0, 0.001);
-    public static PID yPID = new PID (0.1, 0.0, 0.001);
-    public static PID hPID = new PID (0.15, 0.0, 0.001);
+    public static PID xPID = new PID (0.1, 0.0, 0.003);
+    public static PID yPID = new PID (0.1, 0.0, 0.003);
+    public static PID hPID = new PID (0.15, 0.0, 0.003);
 
-    public static double xThresh = 1.0, yThresh = 1.0, hThresh = 3.0;
+    public static double xThresh = 1.0, yThresh = 1.0, hThresh = 1.0;
     private double xError = 0.0, yError = 0.0, hError = 0.0;
 
     public void update() {

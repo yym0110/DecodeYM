@@ -15,17 +15,28 @@ import org.firstinspires.ftc.teamcode.vision.LLGoalDetector;
 
 @Config
 public class Shooter {
+    public static double closeAngle = 0.7, closeVel = 65, midAngle = 1.0, midVel  = 77, farAngle = 1.34, farVel = 0.0;
+    public static boolean testing = false;
+
     public enum State {
-        CLOSE(0.7, 65),
-        MID(1.0, 75),
-        FAR(1.34, 100),
+        CLOSE(closeAngle, closeVel),
+        MID(midAngle, midVel),
+        FAR(farAngle, farVel),
         OFF(0.0, 0.0);
 
-        private final double hoodAngle, flywheelVel;
+        private double hoodAngle, flywheelVel;
 
         State(double hoodAngle, double flywheelVel){
             this.hoodAngle = hoodAngle;
             this.flywheelVel = flywheelVel;
+        }
+
+        public static void setHoodAngle(State state, double angle){
+            state.hoodAngle = angle;
+        }
+
+        public static void setFlywheelVel (State state, double vel){
+            state.flywheelVel = vel;
         }
     } State state = State.CLOSE;
 
@@ -97,7 +108,7 @@ public class Shooter {
         flywheel.motor[0].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    double error;
+    public double error;
     public void update() {
         // Flywheel Velocity PID
         if (targetVelocity <= 1) velocityPID.resetIntegral();
@@ -129,6 +140,15 @@ public class Shooter {
         turret.setTargetAngle(turretError);
          */
 
+        if(testing){
+            State.setHoodAngle(State.CLOSE, closeAngle);
+            State.setFlywheelVel(State.CLOSE, closeVel);
+            State.setHoodAngle(State.MID, midAngle);
+            State.setFlywheelVel(State.MID, midVel);
+            State.setHoodAngle(State.FAR, farAngle);
+            State.setFlywheelVel(State.FAR, farVel);
+        }
+
         TelemetryUtil.packet.put("Shooter : Flywheel Filtered Velocity", filteredVelocity);
         TelemetryUtil.packet.put("Shooter : Flywheel Target Velocity", targetVelocity);
         TelemetryUtil.packet.put("Shooter : Flywheel PID Power", pow * 100);
@@ -159,7 +179,7 @@ public class Shooter {
         hood.setTargetAngle(mode.hoodAngle);
     }
 
-    public void setShooterBlocker (boolean on) {flywheelBlocker.setTargetAngle (on ? 1.5 : 0);}
+    public void setShooterBlocker (boolean on) {flywheelBlocker.setTargetAngle (on ? 1.5 : -0.2);}
 
-    public boolean atVel () {return error < 1.0;}
+    public boolean atVel () {return Math.abs(error) < 1.0;}
 }

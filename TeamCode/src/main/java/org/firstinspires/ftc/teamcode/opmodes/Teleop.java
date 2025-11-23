@@ -2,24 +2,29 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.AUTO_ENDING_POSE;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.utils.ButtonToggle;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 
+@Config
 @TeleOp(name = "A. Teleop")
 public class Teleop extends LinearOpMode {
-    public enum State{
+    public enum State {
         CLOSE,
         MID,
         FAR
     } State state = State.FAR;
+
+    public static double feedPower = 0.6, intakePower = 0.8;
 
     public void runOpMode() {
         Globals.RUNMODE = RunMode.TELEOP;
@@ -43,6 +48,8 @@ public class Teleop extends LinearOpMode {
         boolean intakeReversed = false;
         boolean intakeOn = false;
         boolean flywheelOn = false;
+        boolean atSpeedRumble = false;
+        boolean firstLoop = false;
 
         robot.intake.state = Intake.State.TEST;
 
@@ -64,37 +71,47 @@ public class Teleop extends LinearOpMode {
                 intakeReversed = intakeOn && !intakeReversed;
                 intakeOn = true;
             }
-            robot.intake.roller.setTargetPowerSmooth(intakeOn ? (intakeReversed ? -0.8 : 0.8) : 0);
+
+            robot.intake.roller.setTargetPowerSmooth(intakeOn ? (intakeReversed ? -intakePower : intakePower) : 0);
 
             if (b1.isHeld(gamepad1.b, 500) || b2.isHeld(gamepad2.b, 500)
             || y1.isHeld(gamepad1.y, 500) || y2.isHeld(gamepad2.y, 500)
             || x1.isHeld(gamepad1.x, 500) || x2.isHeld(gamepad2.x, 500)) { // Off
                 flywheelOn = false;
-                robot.shooter.setTargetVelocity(0);
-                robot.shooter.setHoodAngle(0);
+                robot.shooter.setShooter(Shooter.State.OFF);
             } else if (b1.isClicked(gamepad1.b) || b2.isClicked(gamepad2.b)) { // Close
                 flywheelOn = true;
-                robot.shooter.setTargetVelocity(65);
-                robot.shooter.setHoodAngle(0.7);
+                robot.shooter.setShooter(Shooter.State.CLOSE);
                 state = State.CLOSE;
+                atSpeedRumble = true;
+                firstLoop = true;
             } else if (y1.isClicked(gamepad1.y) || y2.isClicked(gamepad2.y)) { // Middle
                 flywheelOn = true;
-                robot.shooter.setTargetVelocity(75);
-                robot.shooter.setHoodAngle(1.0);
+                robot.shooter.setShooter(Shooter.State.MID);
                 state = State.MID;
+                atSpeedRumble = true;
+                firstLoop = true;
             } else if (x1.isClicked(gamepad1.x) || x2.isClicked(gamepad2.x)) { // Far
                 flywheelOn = true;
-                robot.shooter.setTargetVelocity(90);
-                robot.shooter.setHoodAngle(1.34);
+                robot.shooter.setShooter(Shooter.State.FAR);
                 state = State.FAR;
+                atSpeedRumble = true;
+                firstLoop = true;
+            }
+            if(atSpeedRumble && firstLoop){
+                firstLoop = false;
+            } else if (atSpeedRumble && !firstLoop && robot.shooter.atVel()){
+                gamepad1.rumble(200);
+                gamepad2.rumble(200);
+                atSpeedRumble = false;
             }
 
             // activate feed / toggling flywheel blocker
-            if (gamepad1.right_bumper) {
-                robot.intake.feed.setTargetPower(0.6);
+            if (gamepad1.right_bumper || gamepad2.right_bumper) {
+                robot.intake.feed.setTargetPower(feedPower);
                 robot.shooter.setShooterBlocker(false);
             } else {
-                robot.intake.feed.setTargetPower(0);
+                robot.intake.feed.setTargetPower(intakeOn ? (intakeReversed ? -0.4 : 0.4) : 0);
                 robot.shooter.setShooterBlocker(true);
             }
 
@@ -112,11 +129,14 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("intakeOn", intakeOn);
             telemetry.addData("intakeReversed", intakeReversed);
             telemetry.addData("intakePower", robot.intake.roller.getPower());
+            telemetry.addData("feedPower", robot.intake.feed.getPower());
+
             telemetry.addData("shooter distance", state);
             telemetry.addData("flywheelOn", flywheelOn);
+            telemetry.addData("flywheelAtVel", robot.shooter.atVel());
+            telemetry.addData("flywheelError", robot.shooter.error);
             telemetry.addData("flywheel target velocity", robot.shooter.getTargetVelocity());
-            telemetry.addData("flywheel current velocity", robot.shooter.getFilteredVelocity());
-            telemetry.addData("turretPos", robot.shooter.turret.getTargetPos());
+
 
             telemetry.update();
         }

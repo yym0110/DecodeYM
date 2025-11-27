@@ -1,16 +1,19 @@
 package org.firstinspires.ftc.teamcode.vision;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
+import java.util.List;
+
 public class LLGoalDetector {
     private Robot robot;
     private Limelight3A ll;
-    private double tx, ty, ta, staleness;
+    private double tx, ty, ta, staleness, tid;
     private boolean connection, tagDetected = false;
 
     public static int pollRate = 100;
@@ -47,6 +50,11 @@ public class LLGoalDetector {
                 tx = result.getTx();
                 ty = result.getTy();
                 ta = result.getTa();
+                List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+                for (LLResultTypes.FiducialResult fiducial : fiducials) {
+                    tid = fiducial.getFiducialId();
+                }
+
             }else{
                 tagDetected = false;
             }
@@ -76,6 +84,8 @@ public class LLGoalDetector {
         return false;
     }
 
+    public double getTid(){ return tid; }
+
     public double getStaleness(){
         return staleness;
     }
@@ -83,4 +93,5 @@ public class LLGoalDetector {
     public void updatePipeline(){
         ll.pipelineSwitch(Globals.isRed ? 0 : 1);
     }
+    public void obeliskStart() {ll.pipelineSwitch(2);}
 }

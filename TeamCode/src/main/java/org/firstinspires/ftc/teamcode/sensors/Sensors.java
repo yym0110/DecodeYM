@@ -47,8 +47,14 @@ public class Sensors {
     2 -> purple ball
      */
     private ArrayList<Integer> balls;
-    private int[] colors = {0, 0, 0};
-    private REVColorSensorV3 colorSensorV3;
+
+    private REVColorSensorV3 color1;
+    private REVColorSensorV3 color2;
+    private REVColorSensorV3 color3;
+    private int[] greenValues = new int[3];
+    private int maxVal;
+    private int index;
+
     private boolean colorToggle = false, fullChamber = false;
 
     private double voltage;
@@ -67,19 +73,29 @@ public class Sensors {
         odometry.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         odometry.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
-        /*
-        colorSensorV3 = robot.hardwareMap.get(REVColorSensorV3.class, "indexSensor");
-        colorSensorV3.configureLS(REVColorSensorV3.LSResolution.SIXTEEN, REVColorSensorV3.LSMeasureRate.m25s, REVColorSensorV3.LSGain.THREE);
-        colorSensorV3.sendControlRequest(new REVColorSensorV3.ControlRequest()
+
+        color1 = robot.hardwareMap.get(REVColorSensorV3.class, "index1");
+        color1.configureLS(REVColorSensorV3.LSResolution.SIXTEEN, REVColorSensorV3.LSMeasureRate.m25s, REVColorSensorV3.LSGain.THREE);
+        color1.sendControlRequest(new REVColorSensorV3.ControlRequest()
                 .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED)
                 .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED));
-        */
+
+        color2 = robot.hardwareMap.get(REVColorSensorV3.class, "index2");
+        color2.configureLS(REVColorSensorV3.LSResolution.SIXTEEN, REVColorSensorV3.LSMeasureRate.m25s, REVColorSensorV3.LSGain.THREE);
+        color2.sendControlRequest(new REVColorSensorV3.ControlRequest()
+                .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED)
+                .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED));
+
+        color3 = robot.hardwareMap.get(REVColorSensorV3.class, "index3");
+        color3.configureLS(REVColorSensorV3.LSResolution.SIXTEEN, REVColorSensorV3.LSMeasureRate.m25s, REVColorSensorV3.LSGain.THREE);
+        color3.sendControlRequest(new REVColorSensorV3.ControlRequest()
+                .enableFlag(REVColorSensorV3.ControlFlag.LIGHT_SENSOR_ENABLED)
+                .enableFlag(REVColorSensorV3.ControlFlag.RGB_ENABLED));
 
         balls = new ArrayList<Integer>();
         balls.add(0);
         balls.add(0);
         balls.add(0);
-
         voltage = robot.hardwareMap.voltageSensor.iterator().next().getVoltage();
     }
 
@@ -158,4 +174,23 @@ public class Sensors {
         LogUtil.driveCurrentAngle.set(currentPose.heading);
         LogUtil.flywheelVelocity.set(flywheelVelocity);
     }
+
+    /*
+    public int getGreenIndex(){
+
+        color1.readLSGreen();
+        color2.readLSGreen();
+        color3.readLSGreen();
+        maxVal = 0;
+        index = -1;
+
+        for (int i=0;i<3;i++){
+            if (greenValues[i] > maxVal){
+                maxVal = greenValues[i];
+                index = i;
+            }
+        }
+        return index;
+    }
+     */
 }

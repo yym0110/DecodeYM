@@ -38,9 +38,7 @@ public class Shooter {
         INDEX_WAIT,
     }
 
-    public ShooterState shooterState;
-    shooterState = ShooterState.IDLE;
-
+    public ShooterState shooterState = ShooterState.IDLE;
     private final Robot robot;
     private final DcMotorEx ms1, ms2;
     public final PriorityMotor flywheel;

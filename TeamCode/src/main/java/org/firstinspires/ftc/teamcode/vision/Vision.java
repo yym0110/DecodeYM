@@ -50,7 +50,7 @@ public class Vision {
 
             if(obelisk && result != null && result.isValid()){
                 // 21 = GPP
-                greenPosition = result.getFiducialResults().get(0).getFiducialId() - 21;
+                greenPosition = (result.getFiducialResults().get(0).getFiducialId() - 21 + 2) % 3;
                 startAprilTagDetection();
             }
         }

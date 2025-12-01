@@ -215,14 +215,8 @@ public class Shooter {
 
     public boolean atVel () {return error < 1.0;}
 
-    public int calcIndex(int greenBall){
-        if(goalDetector.getTid() == 21){
-            diff = 0 - greenBall % 3;
-        } else if (goalDetector.getTid() == 22){
-            diff = 1 - greenBall % 3;
-        } else if (goalDetector.getTid() == 23){
-            diff = 2 - greenBall % 3;
-        }
+    public int calcIndex(int greenBall, int goalDetector){
+        diff = (goalDetector - greenBall) % 3;
         return diff;
     }
 

@@ -55,7 +55,6 @@ public class BlueGoalAuto extends LinearOpMode {
             TelemetryUtil.packet.put("Auto Stage", "Step 1 - Move to shooting position");
             robot.drivetrain.goToPoint(new Pose2d(-36, -36, Math.PI * 3 / 4), 0.5);
             //set shooter speed and hood angle
-            robot.shooter.setShooter(Shooter.State.CLOSE);
             //make the blocker exist
             robot.shooter.setShooterBlocker(true);
             robot.update();
@@ -90,7 +89,6 @@ public class BlueGoalAuto extends LinearOpMode {
 
         if(gui.getAutoSteps().contains("Step 4 - move to first spike marks")) {
             TelemetryUtil.packet.put("Auto Stage", "Step 4 - move to first spike marks");
-            robot.shooter.setShooter(Shooter.State.OFF);
             robot.shooter.setShooterBlocker(true);
             robot.intake.roller.setTargetPower(0.0);
             robot.intake.feed.setTargetPower(0.0);
@@ -119,7 +117,6 @@ public class BlueGoalAuto extends LinearOpMode {
         if(gui.getAutoSteps().contains("Step 7 - move to shooting zone")) {
             TelemetryUtil.packet.put("Auto Stage", "Step 7 - move to shooting zone");
             robot.drivetrain.goToPoint(new Pose2d(-36, -36, Math.PI * 3 / 4), 0.5);
-            robot.shooter.setShooter(Shooter.State.CLOSE);
             robot.shooter.setShooterBlocker(true);
             robot.update();
             robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && !robot.shooter.atVel());
@@ -148,7 +145,6 @@ public class BlueGoalAuto extends LinearOpMode {
 
         if(gui.getAutoSteps().contains("Step 10 - move to second spike marks")) {
             TelemetryUtil.packet.put("Auto State", "Step 10 - move to second spike marks");
-            robot.shooter.setShooter(Shooter.State.OFF);
             robot.shooter.setShooterBlocker(true);
             robot.intake.roller.setTargetPower(0.0);
             robot.intake.feed.setTargetPower(0.0);
@@ -170,7 +166,6 @@ public class BlueGoalAuto extends LinearOpMode {
         if(gui.getAutoSteps().contains("Step 12 - move to shooting zone")) {
             TelemetryUtil.packet.put("Auto Stage", "Step 12 - move to shooting zone");
             robot.drivetrain.goToPoint(new Pose2d(-36, -36, Math.PI * 3 / 4), 0.5);
-            robot.shooter.setShooter(Shooter.State.CLOSE);
             robot.shooter.setShooterBlocker(true);
             robot.update();
             robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && !robot.shooter.atVel());
@@ -198,7 +193,6 @@ public class BlueGoalAuto extends LinearOpMode {
 
         if(gui.getAutoSteps().contains("Step 15 - move to third spike marks")) {
             TelemetryUtil.packet.put("Auto State", "Step 15 - move to third spike marks");
-            robot.shooter.setShooter(Shooter.State.OFF);
             robot.shooter.setShooterBlocker(true);
             robot.intake.roller.setTargetPower(0.0);
             robot.intake.feed.setTargetPower(0.0);
@@ -220,7 +214,6 @@ public class BlueGoalAuto extends LinearOpMode {
         if(gui.getAutoSteps().contains("Step 17 - move to shooting zone")) {
             TelemetryUtil.packet.put("Auto Stage", "Step 17 - move to shooting zone");
             robot.drivetrain.goToPoint(new Pose2d(-36, -36, Math.PI * 3 / 4), 0.5);
-            robot.shooter.setShooter(Shooter.State.CLOSE);
             robot.shooter.setShooterBlocker(true);
             robot.update();
             robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT && !robot.shooter.atVel());
@@ -248,7 +241,6 @@ public class BlueGoalAuto extends LinearOpMode {
 
         if(gui.getAutoSteps().contains("Step 20 - Move to the gate")) {
             TelemetryUtil.packet.put("Auto Stage", "Step 20 - Move to the gate");
-            robot.shooter.setShooter(Shooter.State.OFF);
             robot.shooter.setShooterBlocker(true);
             robot.intake.roller.setTargetPower(0.0);
             robot.intake.feed.setTargetPower(0.0);

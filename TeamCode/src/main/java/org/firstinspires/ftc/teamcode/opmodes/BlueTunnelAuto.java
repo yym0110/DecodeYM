@@ -33,7 +33,6 @@ public class BlueTunnelAuto extends LinearOpMode {
 
         TelemetryUtil.packet.put("Auto Stage", "Step 1");
         robot.drivetrain.goToPoint(new Pose2d(-8, 8, -Math.PI * 2/3), 0.5);
-        robot.shooter.setShooter(Shooter.State.MID);
         robot.shooter.setShooterBlocker(true);
         robot.update();
         // Wait for either the Drivetrain to be at point AND Shooter to reach the right velocity, OR for 5 seconds
@@ -56,7 +55,6 @@ public class BlueTunnelAuto extends LinearOpMode {
         robot.waitWhile(() -> System.currentTimeMillis() - shooterTimer <= 1500);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 4");
-        robot.shooter.setShooter(Shooter.State.OFF);
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);
@@ -79,7 +77,6 @@ public class BlueTunnelAuto extends LinearOpMode {
         TelemetryUtil.packet.put("Auto Stage", "Step 6");
         stallTimer = System.currentTimeMillis();
         robot.drivetrain.goToPoint(new Pose2d(-8, -8, -Math.PI * 2/3), 0.5);
-        robot.shooter.setShooter(Shooter.State.MID);
         robot.shooter.setShooterBlocker(true);
         robot.update();
         // Move to shooting position AND wait or shooter velocity to reach target
@@ -102,7 +99,6 @@ public class BlueTunnelAuto extends LinearOpMode {
         robot.waitWhile(() -> System.currentTimeMillis() - shooterTimer <= 1500);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 9");
-        robot.shooter.setShooter(Shooter.State.OFF);
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);

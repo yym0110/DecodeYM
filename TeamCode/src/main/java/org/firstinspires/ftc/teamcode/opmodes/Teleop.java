@@ -44,7 +44,7 @@ public class Teleop extends LinearOpMode {
         boolean flywheelOn = false;
         boolean atSpeedRumble = false;
         boolean firstLoop = false;
-        Shooter.State state = Shooter.State.OFF;
+//        Shooter.State state = Shooter.State.OFF;
 
         robot.intake.state = Intake.State.TEST;
 
@@ -72,24 +72,24 @@ public class Teleop extends LinearOpMode {
             || y1.isHeld(gamepad1.y, 500) || y2.isHeld(gamepad2.y, 500)
             || x1.isHeld(gamepad1.x, 500) || x2.isHeld(gamepad2.x, 500)) { // Off
                 flywheelOn = false;
-                robot.shooter.setShooter(Shooter.State.OFF);
-                state = Shooter.State.OFF;
+//                robot.shooter.setShooter(Shooter.State.OFF);
+//                state = Shooter.State.OFF;
             } else if (b1.isClicked(gamepad1.b) || b2.isClicked(gamepad2.b)) { // Close
                 flywheelOn = true;
-                robot.shooter.setShooter(Shooter.State.CLOSE);
-                state = Shooter.State.CLOSE;
+//                robot.shooter.setShooter(Shooter.State.CLOSE);
+//                state = Shooter.State.CLOSE;
                 atSpeedRumble = true;
                 firstLoop = true;
             } else if (y1.isClicked(gamepad1.y) || y2.isClicked(gamepad2.y)) { // Middle
                 flywheelOn = true;
-                robot.shooter.setShooter(Shooter.State.MID);
-                state = Shooter.State.MID;
+//                robot.shooter.setShooter(Shooter.State.MID);
+//                state = Shooter.State.MID;
                 atSpeedRumble = true;
                 firstLoop = true;
             } else if (x1.isClicked(gamepad1.x) || x2.isClicked(gamepad2.x)) { // Far
                 flywheelOn = true;
-                robot.shooter.setShooter(Shooter.State.FAR);
-                state = Shooter.State.FAR;
+//                robot.shooter.setShooter(Shooter.State.FAR);
+//                state = Shooter.State.FAR;
                 atSpeedRumble = true;
                 firstLoop = true;
             }
@@ -102,7 +102,7 @@ public class Teleop extends LinearOpMode {
             }
 
             // activate feed / toggling flywheel blocker
-            if ((gamepad1.right_bumper || gamepad2.right_bumper) && state != Shooter.State.OFF) {
+            if ((gamepad1.right_bumper || gamepad2.right_bumper) /*&& state != Shooter.State.OFF*/) {
                 robot.shooter.setShooterBlocker(false);
                 robot.intake.feed.setTargetPower(robot.shooter.flywheelBlocker.inPosition() ? feedPower : 0);
             } else {
@@ -125,7 +125,7 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("intakePower", robot.intake.roller.getPower());
             telemetry.addData("feedPower", robot.intake.feed.getPower());
 
-            telemetry.addData("shooter distance", state);
+            // telemetry.addData("shooter distance", state);
             telemetry.addData("flywheelOn", flywheelOn);
             telemetry.addData("flywheelAtVel", robot.shooter.atVel());
             telemetry.addData("flywheelError", robot.shooter.error);

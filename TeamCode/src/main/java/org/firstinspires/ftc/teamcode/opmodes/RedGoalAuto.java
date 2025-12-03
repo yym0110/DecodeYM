@@ -35,7 +35,6 @@ public class RedGoalAuto extends LinearOpMode {
 
         TelemetryUtil.packet.put("Auto Stage", "Step 1");
         robot.drivetrain.goToPoint(new Pose2d(-36, 36, Math.PI * 3/4), 0.5);
-        robot.shooter.setShooter(Shooter.State.CLOSE);
         robot.shooter.setShooterBlocker(true);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
@@ -55,7 +54,6 @@ public class RedGoalAuto extends LinearOpMode {
         robot.waitWhile(() -> System.currentTimeMillis() - shooterTimer <= 1500);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 4");
-        robot.shooter.setShooter(Shooter.State.OFF);
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);
@@ -73,7 +71,6 @@ public class RedGoalAuto extends LinearOpMode {
 
         TelemetryUtil.packet.put("Auto Stage", "Step 6");
         robot.drivetrain.goToPoint(new Pose2d(-36, 36, Math.PI * 3/4), 0.5);
-        robot.shooter.setShooter(Shooter.State.CLOSE);
         robot.shooter.setShooterBlocker(true);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
@@ -93,7 +90,6 @@ public class RedGoalAuto extends LinearOpMode {
         robot.waitWhile(() -> System.currentTimeMillis() - shooterTimer <= 1500);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 10");
-        robot.shooter.setShooter(Shooter.State.OFF);
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);
@@ -111,7 +107,6 @@ public class RedGoalAuto extends LinearOpMode {
 
         TelemetryUtil.packet.put("Auto Stage", "Step 12");
         robot.drivetrain.goToPoint(new Pose2d(-8, 8, Math.PI * 2/3), 0.5);
-        robot.shooter.setShooter(Shooter.State.MID);
         robot.shooter.setShooterBlocker(true);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
@@ -131,7 +126,6 @@ public class RedGoalAuto extends LinearOpMode {
         robot.waitWhile(() -> System.currentTimeMillis() - shooterTimer <= 1500);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 15");
-        robot.shooter.setShooter(Shooter.State.OFF);
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);

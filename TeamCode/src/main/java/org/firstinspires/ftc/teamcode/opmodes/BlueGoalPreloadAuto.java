@@ -31,7 +31,6 @@ public class BlueGoalPreloadAuto extends LinearOpMode {
 
         TelemetryUtil.packet.put("Auto Stage", "Step 1");
         robot.drivetrain.goToPoint(new Pose2d(-36, -36, -Math.PI * 3/4), 0.5);
-        robot.shooter.setShooter(Shooter.State.CLOSE);
         robot.shooter.setShooterBlocker(true);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel());
@@ -51,7 +50,6 @@ public class BlueGoalPreloadAuto extends LinearOpMode {
         robot.waitWhile(() -> System.currentTimeMillis() - shooterTimer <= 1500);
 
         TelemetryUtil.packet.put("Auto Stage", "Step 4");
-        robot.shooter.setShooter(Shooter.State.OFF);
         robot.shooter.setShooterBlocker(true);
         robot.intake.roller.setTargetPower(0.0);
         robot.intake.feed.setTargetPower(0.0);

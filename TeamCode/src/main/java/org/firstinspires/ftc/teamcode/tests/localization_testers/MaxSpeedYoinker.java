@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.localization_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -27,7 +29,7 @@ public class MaxSpeedYoinker extends LinearOpMode {
 
         while (opModeIsActive()) {
             robot.drivetrain.drive(gamepad1);
-            Vector2 velocity = robot.sensors.getVelocity();
+            Vector2 velocity = new Vector2 (ROBOT_VELOCITY.x, ROBOT_VELOCITY.y);
             Vector3 sV = new Vector3(
                     velocity.x,
                     velocity.y,

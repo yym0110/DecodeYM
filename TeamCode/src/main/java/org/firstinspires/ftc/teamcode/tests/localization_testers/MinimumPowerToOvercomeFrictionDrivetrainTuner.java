@@ -26,7 +26,7 @@ public class MinimumPowerToOvercomeFrictionDrivetrainTuner extends LinearOpMode 
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
         Sensors sensors = robot.sensors;
-        Localizer localizer = new Localizer(hardwareMap, sensors, robot.drivetrain, "ff00ff", "ffff00");
+        Localizer localizer = new Localizer(sensors, robot.drivetrain, "ff00ff", "ffff00");
         HardwareQueue hardwareQueue = robot.hardwareQueue;
 
         ArrayList<PriorityMotor> motors = new ArrayList<>();

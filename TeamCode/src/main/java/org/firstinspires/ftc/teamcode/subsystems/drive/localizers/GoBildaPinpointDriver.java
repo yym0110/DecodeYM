@@ -17,7 +17,7 @@
  *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *   SOFTWARE.
  */
-package org.firstinspires.ftc.teamcode.sensors;
+package org.firstinspires.ftc.teamcode.subsystems.drive.localizers;
 import static com.qualcomm.robotcore.util.TypeConversion.byteArrayToInt;
 import com.qualcomm.hardware.lynx.LynxI2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cAddr;
@@ -26,8 +26,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 import com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties;
 import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType;
 import com.qualcomm.robotcore.util.TypeConversion;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

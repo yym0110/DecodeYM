@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.localization_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -24,7 +26,7 @@ public class MecanumTuner extends LinearOpMode {
         if (System.currentTimeMillis()  >= start + 1500) {
             drivetrain.setMotorPowers(0,0,0,0);
 
-            Pose2d curr = robot.sensors.getOdometryPosition();
+            Pose2d curr = ROBOT_POSITION;
             TelemetryUtil.packet.put("heading", curr.heading);
             TelemetryUtil.packet.put("x", curr.x);
             TelemetryUtil.packet.put("y",curr.y);

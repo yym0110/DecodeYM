@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.sensors_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -7,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.utils.Globals;
-import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -33,7 +34,7 @@ public class SensorTester extends LinearOpMode {
         while (!isStopRequested()) {
             robot.sensors.update();
 
-            Pose2d pos = sensors.getOdometryPosition();
+            Pose2d pos = ROBOT_POSITION;
             String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(), pos.getY(), pos.getHeading());
 
             if (gamepad1.left_stick_button) {

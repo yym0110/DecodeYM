@@ -14,7 +14,10 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.LimelightLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.Localizer;
+import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.MergeLocalizer;
+import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.PID;
@@ -50,7 +53,7 @@ public class Drivetrain {
     private final HardwareQueue hardwareQueue;
     private final Sensors sensors;
 
-    public Drivetrain(Robot robot) {
+    public Drivetrain(Robot robot, Vision vision) {
         this.robot = robot;
         this.hardwareQueue = robot.hardwareQueue;
         this.sensors = robot.sensors;
@@ -81,7 +84,10 @@ public class Drivetrain {
         configureMotors();
 
         localizers = new Localizer[]{
-            new Localizer(robot.hardwareMap, sensors, this, "#00c000", "#00c00060"),
+                new Localizer(robot.sensors, this, "#0000ff", "#ff00ff"),
+                new LimelightLocalizer(robot.sensors, this, "#ff0000", "#00ff00"),
+                new MergeLocalizer (robot.sensors, this, "#ffff00", "#00ffff"),
+                new PinpointLocalizer(robot.hardwareMap, robot.sensors, this, "#aa0000", "#00ee00")
         };
 
         setMinPowersToOvercomeFriction(1.0);
@@ -146,12 +152,23 @@ public class Drivetrain {
         }
     }
 
+    private boolean pinpointOverride = false;
+
+    public void togglePinpoint (boolean toggle) { pinpointOverride = toggle;}
 
     public void updateLocalizers() {
-        for (Localizer l : localizers) {
-            l.updateEncoders(sensors.odoWheelPositions);
-            l.update();
+
+        localizers[0].updateEncoders (sensors.getOdometry());
+
+        if(!vision.obelisk){
+            localizers[1].updateEncoders(sensors.getOdometry());
+            localizers[1].update();
         }
+
+        localizers[2].updateEncoders(sensors.getOdometry());
+        localizers[2].update();
+
+        if(pinpointOverride) { localizers[3].update();}
     }
 
     public void setPoseEstimate(Pose2d pose2d) {
@@ -178,11 +195,11 @@ public class Drivetrain {
     public static double centripetalScalar = 0.2;
 
     private Pose2d targetPoint = new Pose2d (0, 0, 0);
-    public static PID xPID = new PID (0.1, 0.0, 0.001);
-    public static PID yPID = new PID (0.1, 0.0, 0.001);
-    public static PID hPID = new PID (0.15, 0.0, 0.001);
+    public static PID xPID = new PID (0.1, 0.0, 0.003);
+    public static PID yPID = new PID (0.1, 0.0, 0.003);
+    public static PID hPID = new PID (0.15, 0.0, 0.003);
 
-    public static double xThresh = 1.0, yThresh = 1.0, hThresh = 3.0;
+    public static double xThresh = 1.0, yThresh = 1.0, hThresh = 1.0;
     private double xError = 0.0, yError = 0.0, hError = 0.0;
 
     public void update() {
@@ -190,9 +207,9 @@ public class Drivetrain {
             return;
         }
 
-        ROBOT_POSITION = sensors.getOdometryPosition();
-        Vector2 vel = sensors.getVelocity();
-        ROBOT_VELOCITY = new Pose2d(vel.x, vel.y, Math.atan2(vel.x, vel.y));
+        updateLocalizers();
+        ROBOT_POSITION = localizers[pinpointOverride ? 3 : 2].getPoseEstimate();
+        ROBOT_VELOCITY = localizers[pinpointOverride ? 3 : 2].getRelativePoseVelocity();
 
         if(path != null) {
             state = State.FOLLOW_SPLINE;
@@ -365,12 +382,16 @@ public class Drivetrain {
     public void updateTelemetry() {
         TelemetryUtil.packet.put("Drivetrain : state", state);
 
+        TelemetryUtil.packet.put("Drivetrain : TargetPoint", "(" + targetPoint.x + ", " + targetPoint.y + ", " + targetPoint.heading + ")");
+
         TelemetryUtil.packet.put("Drivetrain : PID xError", xError);
         TelemetryUtil.packet.put("Drivetrain : PID yError", yError);
         TelemetryUtil.packet.put("Drivetrain : PID hError", hError);
 
+        Canvas canvas = TelemetryUtil.packet.fieldOverlay();
+        DashboardUtil.drawRobot(canvas, targetPoint, "8000ff");
+
         if (path != null) {
-            Canvas canvas = TelemetryUtil.packet.fieldOverlay();
             DashboardUtil.drawRobot(canvas, new Pose2d(ROBOT_POSITION.x + robot.sensors.loopTime * pd.vel.x, ROBOT_POSITION.y + robot.sensors.loopTime * pd.vel.y, Math.atan2(pd.vel.x, pd.vel.y)), "#8000ff");
             Spline s = path.pathSegments.get(pd.index).spline;
 

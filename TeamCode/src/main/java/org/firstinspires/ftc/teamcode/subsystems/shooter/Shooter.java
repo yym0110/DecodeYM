@@ -14,36 +14,26 @@ import org.firstinspires.ftc.teamcode.utils.Vector2;
 import org.firstinspires.ftc.teamcode.utils.Vector3;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
 import org.firstinspires.ftc.teamcode.utils.priority.nPriorityServo;
-import org.firstinspires.ftc.teamcode.vision.LLGoalDetector;
 
 import java.util.Vector;
 
 @Config
 public class Shooter {
     public enum State {
-        CLOSE(0.7, 65),
-        MID(1.0, 75),
-        FAR(1.34, 100),
-        OFF(0.0, 0.0);
-
-        private final double hoodAngle, flywheelVel;
-
-        State(double hoodAngle, double flywheelVel){
-            this.hoodAngle = hoodAngle;
-            this.flywheelVel = flywheelVel;
-        }
-    } State state = State.CLOSE;
+        IDLE,
+        ACCEL,
+        SHOOT,
+        INDEX
+    } State state = State.IDLE;
 
     private final Robot robot;
     private final Sensors sensors;
     private final DcMotorEx ms1, ms2;
     public final PriorityMotor flywheel;
-    public final nPriorityServo flywheelBlocker, turret, hood/*, cloth*/;
+    public final nPriorityServo flywheelBlocker, turret, hood, net;
 
-    public LLGoalDetector goalDetector;
-    private double turretError;
-    private long lastUpdateTime = System.currentTimeMillis();
-    public static double limelightThresh = 5.0, limelightTimeDelay = 10, limelightScalar = 0.05;
+    private boolean indexPrepareRequest = false, indexRequest = false;
+    private boolean shootPrepareRequest = false, shootRequest = false;
 
     // velocity is in inches / second
     public static PID velocityPID = new PID (0.0, 0.001, 0.001);
@@ -103,14 +93,54 @@ public class Shooter {
                 new boolean[] {false},
                 2, 5
         );
-        robot.hardwareQueue.addDevices(flywheel, hood, turret, flywheelBlocker);
+
+        net = new nPriorityServo(
+                new Servo[] {robot.hardwareMap.get(Servo.class, "net")},
+                "net", nPriorityServo.ServoType.AXON_MINI,
+                0, 1.0, 0.5,
+                new boolean [] {false},
+                2, 5
+        );
+
+        robot.hardwareQueue.addDevices(flywheel, hood, turret, flywheelBlocker, net);
 
         flywheel.motor[0].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.motor[0].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    double error;
+    public double error;
+
     public void update() {
+        switch (state){
+            case IDLE:
+                if(shootPrepareRequest){
+                    // Calculation for targetVelocity goes here
+                    state = State.ACCEL;
+                }
+
+                if(indexPrepareRequest){
+                    // Calculation for targetVelocity goes here
+                    state = State.ACCEL;
+                }
+                break;
+            case ACCEL:
+                if(atVel() && shootRequest){
+                    state = State.SHOOT;
+                }
+
+                if(atVel() && indexRequest){
+                    state = State.INDEX;
+                }
+                break;
+            case SHOOT:
+            case INDEX:
+                setShooterBlocker(false);
+
+                // TODO: Probably need to reorganize this to better differentiate the two actions, especially because indexing and shooting will lauch diff number of balls
+                break;
+        }
+
+
         // Flywheel Velocity PID
         if (targetVelocity <= 1) velocityPID.resetIntegral();
         else velocityPID.clipIntegral(-1, 1);
@@ -151,6 +181,14 @@ public class Shooter {
         TelemetryUtil.packet.put("Shooter : Turret Target Angle", turret.getTargetAngle());
     }
 
+    public void indexPrepare() { indexPrepareRequest = true;}
+
+    public void index() { indexRequest = true;}
+
+    public void shootPrepare() { shootPrepareRequest = true;}
+
+    public void shoot() {shootRequest = true;}
+
     public void setTurretAngle(double target_angle) {
         turret.setTargetAngle(target_angle);
 
@@ -170,6 +208,10 @@ public class Shooter {
 
     }
 
+    /**
+     * The contents are just a placeholder for now
+     * @return
+     */
     public double getBallExitSpd() {
         return 639.899748567 / 14 * sensors.getVoltage();
         // the ~640 is just from the random 640 in/sec that PJ said, I have no clue what the model will be like but I suspect linear or quadratic
@@ -182,17 +224,13 @@ public class Shooter {
         LogUtil.hoodAngle.set(target_angle);
     }
 
-
     public void setTargetVelocity(double targetVelocity) { this.targetVelocity = targetVelocity; }
+
     public double getTargetVelocity() { return targetVelocity; }
+
     public double getFilteredVelocity() { return filteredVelocity; }
 
-    public void setShooter(State mode){
-        targetVelocity = mode.flywheelVel;
-        hood.setTargetAngle(mode.hoodAngle);
-    }
+    public void setShooterBlocker (boolean on) {flywheelBlocker.setTargetAngle (on ? 2.1 : -0.2);}
 
-    public void setShooterBlocker (boolean on) {flywheelBlocker.setTargetAngle (on ? 1.5 : 0);}
-
-    public boolean atVel () {return error < 1.0;}
+    public boolean atVel () {return Math.abs(error) < 1.0;}
 }

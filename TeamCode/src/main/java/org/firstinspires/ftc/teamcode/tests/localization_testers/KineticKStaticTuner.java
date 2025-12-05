@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.localization_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
+
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -31,7 +33,7 @@ public class KineticKStaticTuner extends LinearOpMode {
         double power = 0.0;
 
         while (opModeIsActive()) {
-            double velx = robot.sensors.getVelocity().x;
+            double velx = ROBOT_VELOCITY.x;
 
             power += scalar * (velx > 5.0 ? -1 : 1);
 

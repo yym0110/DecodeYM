@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.sensors_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -15,7 +17,7 @@ public class PinpointTester extends LinearOpMode {
         waitForStart();
 
         while(!isStopRequested()){
-            Pose2d estimate = robot.sensors.getOdometryPosition();
+            Pose2d estimate = robot.drivetrain.localizers[2].getPoseEstimate();
 
             TelemetryUtil.packet.put("Pinpoint:: x", estimate.getX());
             TelemetryUtil.packet.put("Pinpoint:: y", estimate.getY());

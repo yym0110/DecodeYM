@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.tests.localization_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,7 +39,7 @@ public class CoefFrictionFinder extends LinearOpMode {
                 recording = false;
             }
 
-            Vector2 velocityVec = robot.sensors.getVelocity();
+            Vector2 velocityVec = new Vector2(ROBOT_VELOCITY.x, ROBOT_VELOCITY.y);
             if (velocityVec.mag() == 0) {
                 // We got it bois
                 recording = false;

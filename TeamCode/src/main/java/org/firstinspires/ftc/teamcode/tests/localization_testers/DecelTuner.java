@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.localization_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -50,7 +52,8 @@ public class DecelTuner extends LinearOpMode {
                 gamepad1.rumble(1.0, 1.0, 100);
                 robot.drivetrain.setMotorPowers(0, 0, 0, 0);
 
-                if (robot.sensors.getVelocity().mag() <= 0.5) {
+                Vector2 vel = new Vector2(ROBOT_VELOCITY.x, ROBOT_VELOCITY.y);
+                if (vel.mag() <= 0.5) {
                     Vector3 end = robot.drivetrain.getPoseEstimate().toVec3();
                     delta = Vector3.subtract(end, start.toVec3()).toPose();
                     buffer += pose2dCSV(vnaught) + "," + pose2dCSV(delta) + "\n";
@@ -59,7 +62,7 @@ public class DecelTuner extends LinearOpMode {
             }
 
             if (x) {
-                Vector2 vel = robot.sensors.getVelocity();
+                Vector2 vel = new Vector2(ROBOT_VELOCITY.x, ROBOT_VELOCITY.y);
                 vnaught = new Pose2d(vel.x, vel.y, Math.atan2(vel.x, vel.y));
                 start = robot.drivetrain.getPoseEstimate();
                 stopToggle = true;

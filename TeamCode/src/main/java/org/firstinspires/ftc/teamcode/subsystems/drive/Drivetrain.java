@@ -14,10 +14,8 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.LimelightLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.Localizer;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.MergeLocalizer;
-import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.PID;
@@ -84,10 +82,7 @@ public class Drivetrain {
         configureMotors();
 
         localizers = new Localizer[]{
-                new Localizer(robot.sensors, this, "#0000ff", "#ff00ff"),
-                new LimelightLocalizer(robot.sensors, this, "#ff0000", "#00ff00"),
-                new MergeLocalizer (robot.sensors, this, "#ffff00", "#00ffff"),
-                new PinpointLocalizer(robot.hardwareMap, robot.sensors, this, "#aa0000", "#00ee00")
+                new MergeLocalizer (robot.hardwareMap, robot.sensors, this, "#ffff00", "#00ffff"),
         };
 
         setMinPowersToOvercomeFriction(1.0);

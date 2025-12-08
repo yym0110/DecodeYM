@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.drive.localizers;
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
@@ -10,10 +11,22 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 public class MergeLocalizer extends Localizer{
-    public MergeLocalizer (Sensors sensors, Drivetrain drivetrain, String color, String expectedColor){
+    public MergeLocalizer (HardwareMap hardwareMap, Sensors sensors, Drivetrain drivetrain, String color, String expectedColor){
         super(sensors, drivetrain, color, expectedColor);
+
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint.setOffsets(72, -160);
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
     }
 
+    // Pinpoint
+    private GoBildaPinpointDriver pinpoint;
+    private boolean ppUpdateRequest = false;
+    private long ppLastUpdateTime;
+    private Pose2d ppLastPose;
+
+    // Limelight
     private LLResult res = null;
     private final Pose2d redTag = new Pose2d(-58.3414795, 55.6424675);
     private final Pose2d blueTag = new Pose2d(-58.3414795, -55.6424675);
@@ -23,6 +36,8 @@ public class MergeLocalizer extends Localizer{
         long currentTime = System.nanoTime();
         double loopTime = (double)(currentTime - lastTime)/1.0E9;
         lastTime = currentTime;
+
+        // 3 WHEEL ODOMETRY
 
         double deltaLeft = encoders[0].getDelta();
         double deltaRight = encoders[1].getDelta();
@@ -39,33 +54,36 @@ public class MergeLocalizer extends Localizer{
         relDeltaX = (deltaRight*leftY - deltaLeft*rightY)/(leftY-rightY);
         distanceTraveled += Math.sqrt(relDeltaX*relDeltaX+relDeltaY*relDeltaY);
 
-        Pose2d relOdoDelta = new Pose2d(relDeltaX,relDeltaY,deltaHeading);
+        Pose2d relOdoDelta = new Pose2d (relDeltaX,relDeltaY,deltaHeading);
+
+        // PINPOINT
+
+        if(ppUpdateRequest) {
+            ppLastPose = pinpoint.getPosition();
+            pinpoint.update();
+            ppLastUpdateTime = System.currentTimeMillis();
+        }
+
+        Pose2d ppRelDelta = new Pose2d (
+                pinpoint.getPosX() - ppLastPose.x,
+                pinpoint.getPosY() - ppLastPose.y,
+                pinpoint.getHeading() - ppLastPose.heading
+        );
+
+        // LIMELIGHT
 
         res = drivetrain.vision.getResult();
 
         double D = (tagHeight - drivetrain.vision.cameraHeight) / Math.tan(drivetrain.vision.cameraAngle + res.getTy());
-        // TODO: ROBOT_POSITION.getHeading() is a placeholder, replace once turret PID is written
-        Pose2d relLimelightDelta = new Pose2d(
-                (Globals.isRed ? redTag.x : blueTag.x) - D * Math.cos(ROBOT_POSITION.getHeading() - res.getTx()) - currentPose.x,
-                (Globals.isRed ? redTag.y : blueTag.y) - D * Math.sin(ROBOT_POSITION.getHeading() - res.getTx()) - currentPose.y,
-                (ROBOT_POSITION.getHeading() - res.getTx()) - currentPose.heading
+        Pose2d llEstimatedPose = new Pose2d(
+                // todo: add turret heading to ROBOT_POSITION.getHeading() such that the heading is the turret in global coordinates
+                (Globals.isRed ? redTag.x : blueTag.x) - D * Math.cos(ROBOT_POSITION.getHeading() - res.getTx()),
+                (Globals.isRed ? redTag.y : blueTag.y) - D * Math.sin(ROBOT_POSITION.getHeading() - res.getTx()),
+                ROBOT_POSITION.getHeading() - res.getTx()
         );
 
-        // remove weight of limelight when scanning for obelisk as the values will be bogus
-        double scalar = 1 - 2 / Math.PI * Math.atan(3 / 10.0 * (drivetrain.vision.obelisk ? 100000 : res.getStaleness()));
-        Pose2d relMergedDelta = new Pose2d (relOdoDelta.x * (1 - scalar) + relLimelightDelta.x * scalar, relOdoDelta.y * (1 - scalar) + relLimelightDelta.y * scalar, relOdoDelta.heading * (1 - scalar) + relLimelightDelta.heading * scalar);
-        constAccelMath.calculate(loopTime, relMergedDelta, currentPose);
+        // MERGE
 
-        x = currentPose.x;
-        y = currentPose.y;
-        heading = currentPose.heading;
 
-        relHistory.add(0,relMergedDelta);
-        nanoTimes.add(0, currentTime);
-        poseHistory.add(0,currentPose.clone());
-
-        updateVelocity();
-        updateExpected();
-        updateField();
     }
 }

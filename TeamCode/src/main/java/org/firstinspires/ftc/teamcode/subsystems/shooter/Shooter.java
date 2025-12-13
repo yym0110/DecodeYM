@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.utils.Complex;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -34,7 +35,7 @@ public class Shooter {
     private final DcMotorEx ms1, ms2;
     public final PriorityMotor flywheel;
     public final nPriorityServo flywheelBlocker, hood, net;
-    public final nPriorityServo turret;
+    public final PriorityCRServo turret;
 
     private boolean indexPrepareRequest = false, indexRequest = false;
     private boolean shootPrepareRequest = false, shootRequest = false;
@@ -63,6 +64,7 @@ public class Shooter {
     public Vector3 tVel  = new Vector3(0, 0, 0);
     public Vector3 rVel = new Vector3(0, 0, 0);
     public Vector3 vel = new Vector3(0, 0, 0);
+    private final PID turretPID = new PID(0.5, 0.01, 0.01);
 
 
 
@@ -91,10 +93,10 @@ public class Shooter {
             2, 5
         );
 
-        turret = new nPriorityServo(
-            new Servo[]{robot.hardwareMap.get(Servo.class, "turret1"), robot.hardwareMap.get(Servo.class,"turret2")},
-            "turret", nPriorityServo.ServoType.AXON_MINI,
-                0.03, 0.38, 0.03, // TODO: tune these values so base position is with heading
+        turret = new PriorityCRServo(
+            new CRServo[]{robot.hardwareMap.get(CRServo.class, "turret1"), robot.hardwareMap.get(CRServo.class,"turret2")},
+            "turret", PriorityCRServo.ServoType.AXON_MINI,
+                // 0.03, 0.38, 0.03, // TODO: find out where in the servo is straight ahead
             new boolean[] {false, false},
             2, 5
         );
@@ -175,6 +177,8 @@ public class Shooter {
         flywheel.setTargetPower(pow);
         prevPow = pow;
 
+        // turret aim
+        turret.setTargetPower(turretPID.update(turret.getAngle() - turret.getTargetAngle(), -0.75, 0.75));
 
 
         TelemetryUtil.packet.put("Shooter : Flywheel Filtered Velocity", filteredVelocity);
@@ -199,9 +203,77 @@ public class Shooter {
     }
 
     /**
+     * treat turret angle as global angle
+     * phi is angle with respect to vertical
+     */
+    public void aimLauncherV7() {
+        Complex[] t = new Complex[4];
+        double S = 1; // safety margin for clearing lip
+        double v0 = getBallExitSpd();
+        double A = g * g / 4;
+        double B = 0; // B = 2 * (a dot v) = 0
+        double C = Math.pow(ROBOT_VELOCITY.toVec3().getMag(), 2) + g * (39.25 + S - launcherHeight) - v0 * v0;
+        double D = 2 * Vector3.dot(ROBOT_VELOCITY.toVec3(), ROBOT_POSITION.toVec3());
+        double E = Math.pow(ROBOT_POSITION.toVec3().getMag(), 2);
+        double a = C / A;
+        double b = D / A;
+        double c = E / A;
+        if (Math.abs(b) < 1e-7) {
+            double re1 = a * a - 4 * c;
+            double im1 = re1;
+            if (re1 < 0) {
+                re1 = 0;
+                im1 = Math.sqrt(-im1);
+            } else {
+                im1 = 0;
+                re1 = Math.sqrt(re1);
+            }
+            for (int i = 0; i < t.length; i++) {
+                t[i] = new Complex(re1, im1);
+                int s1 = i % 2 == 0 ? 1 : -1;
+                int s2 = i < 2 ? 1 : -1;
+                t[i].multReal(s1);
+                t[i].addReal(-a);
+                t[i].multReal(1.0 / 2.0);
+                t[i].nRoot(2);
+                t[i].multReal(s2);
+                if (Math.abs(t[i].imag()) > 1e-7 || t[i].real() <= 0) t[i] = null;
+            }
+        } else {
+            double p = -a/12 - c;
+            double q = -1 * a * a * a / 108 + a * c / 3 - b * b / 8;
+            double re1 = q * q / 4 + p * p * p / 27;
+            double im1 = re1;
+            if (re1 < 0) {
+                re1 = 0;
+                im1 = Math.sqrt(-im1);
+            } else {
+                im1 = 0;
+                re1 = Math.sqrt(re1);
+            }
+            Complex r = new Complex(-q / 2 + re1, im1);
+            r.nRoot(3);
+            Complex y1 = new Complex(-5 * a / 6, 0);
+            if (r.mag() < 1e-7) y1.addReal(-1 * Math.pow(q, 1 / 3.0));
+            else {
+                y1.add(r);
+                y1.add(Complex.divide(new Complex(p / -3, 0), r));
+            }
+            Complex w = new Complex(y1);
+            w.multReal(2);
+            w.addReal(a);
+            w.nRoot(2);
+            // TODO: calculate literally the roots from here, you have everything
+        }
+
+
+
+
+    }
+
+    /**
      * treat turret angle as the offset from heading
      * phi is angle with respect to vertical
-     * this is the v4 algorithm, v7 is in the works
      */
     public void aimLauncherV4() {
         distance = new Vector3(ballTarget.getX() - ROBOT_POSITION.x, ballTarget.getY() -  ROBOT_POSITION.y, 0);

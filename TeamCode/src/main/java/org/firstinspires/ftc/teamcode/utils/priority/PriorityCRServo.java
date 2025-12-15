@@ -88,6 +88,8 @@ public class PriorityCRServo extends PriorityDevice {
     }
 
     public void setTargetAngle(double angle) {
+        while(angle < 0) angle += 2 * Math.PI;
+        while(angle >= 2 * Math.PI) angle -= 2 * Math.PI;
         this.angle = angle;
     }
 }

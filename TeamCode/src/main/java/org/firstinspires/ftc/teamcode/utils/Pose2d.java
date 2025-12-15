@@ -57,6 +57,9 @@ public class Pose2d implements Cloneable {
         return new Vector3(x, y, heading * Globals.TRACK_WIDTH / 2);
     }
 
+    public double mag() { return Math.sqrt(x * x + y * y); }
+    public Vector2 toVec2() {return new Vector2(x, y); }
+
     @NonNull
     @Override
     public Pose2d clone() {

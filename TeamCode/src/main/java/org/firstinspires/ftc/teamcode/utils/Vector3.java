@@ -55,6 +55,13 @@ public class Vector3 implements Cloneable {
         magcache = 1;
     }
 
+    public double theta() {
+        return Math.atan2(y, x);
+    }
+
+    public double phi() {
+        return Math.acos(z / getMag());
+    }
 
     public static Vector3 add(Vector3 a, Vector3 b) {
         return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);

@@ -27,7 +27,7 @@ public class Complex {
 
     public void addImag(double a) { im += a; magCache = -1; thetaCache = -10; }
 
-    public void multReal(double m) { re *= m; im *= m; magCache *= m; }
+    public void multReal(double m) { if(m == 1.0) return; re *= m; im *= m; magCache *= m; }
 
     public void multImag(double m) {
         double re1 = -im * m; double im1 = re * m;
@@ -84,6 +84,11 @@ public class Complex {
         a.multZ(b);
         a.multReal(1 / denom);
         return a;
+    }
+
+    public void reciprocal() {
+        conjugate();
+        multReal(Math.pow(mag(), -2));
     }
 
     public static Complex nRoot(double n, Complex z1) {

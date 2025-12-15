@@ -203,18 +203,23 @@ public class Shooter {
     }
 
     /**
-     * treat turret angle as global angle
+     * treat turret angle as difference from heading
      * phi is angle with respect to vertical
      */
-    public void aimLauncherV7() {
+    public boolean aimLauncherV7() {
         Complex[] t = new Complex[4];
+        int n = 0;
         double S = 1; // safety margin for clearing lip
-        double v0 = getBallExitSpd();
+        Vector3 P = new Vector3(-58.3414785, 55.6424675, 39.25 + S);
+        P.subtract(new Vector3(ROBOT_POSITION.x, ROBOT_POSITION.y, launcherHeight));
+        Vector3 V = new Vector3(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y, 0); // TODO: need to subtract robot angular vel component thing to this
+        // accel vector is irrelevant since the target is only accelerating constantly in upwards by g
+        double v0 = getBallExitSpd(); // TODO: ts still needs to be fixed
         double A = g * g / 4;
         double B = 0; // B = 2 * (a dot v) = 0
-        double C = Math.pow(ROBOT_VELOCITY.toVec3().getMag(), 2) + g * (39.25 + S - launcherHeight) - v0 * v0;
-        double D = 2 * Vector3.dot(ROBOT_VELOCITY.toVec3(), ROBOT_POSITION.toVec3());
-        double E = Math.pow(ROBOT_POSITION.toVec3().getMag(), 2);
+        double C = V.x * V.x + V.y + V.y + g * P.z - v0 * v0; // g * P.z term is 2 * a.z * p.z, but 2 * a.z is g
+        double D = 2 * Vector3.dot(P, V);
+        double E = P.x * P.x + P.y * P.y + P.z * P.z;
         double a = C / A;
         double b = D / A;
         double c = E / A;
@@ -229,20 +234,21 @@ public class Shooter {
                 re1 = Math.sqrt(re1);
             }
             for (int i = 0; i < t.length; i++) {
-                t[i] = new Complex(re1, im1);
                 int s1 = i % 2 == 0 ? 1 : -1;
                 int s2 = i < 2 ? 1 : -1;
+                t[i] = new Complex(re1, im1);
                 t[i].multReal(s1);
                 t[i].addReal(-a);
-                t[i].multReal(1.0 / 2.0);
+                t[i].multReal(0.5);
                 t[i].nRoot(2);
                 t[i].multReal(s2);
                 if (Math.abs(t[i].imag()) > 1e-7 || t[i].real() <= 0) t[i] = null;
+                else n++;
             }
         } else {
             double p = -a/12 - c;
-            double q = -1 * a * a * a / 108 + a * c / 3 - b * b / 8;
-            double re1 = q * q / 4 + p * p * p / 27;
+            double q = -1 * a * a * a / 108 + a * c / 3 - b * b * 0.125;
+            double re1 = q * q * 0.25 + p * p * p / 27;
             double im1 = re1;
             if (re1 < 0) {
                 re1 = 0;
@@ -251,7 +257,7 @@ public class Shooter {
                 im1 = 0;
                 re1 = Math.sqrt(re1);
             }
-            Complex r = new Complex(-q / 2 + re1, im1);
+            Complex r = new Complex(-q * 0.5 + re1, im1);
             r.nRoot(3);
             Complex y1 = new Complex(-5 * a / 6, 0);
             if (r.mag() < 1e-7) y1.addReal(-1 * Math.pow(q, 1 / 3.0));
@@ -263,12 +269,50 @@ public class Shooter {
             w.multReal(2);
             w.addReal(a);
             w.nRoot(2);
-            // TODO: calculate literally the roots from here, you have everything
+            for (int i = 0; i < t.length; i++) {
+                int s1 = i % 2 == 0 ? 1 : -1;
+                int s2 = i < 2 ? 1 : -1;
+                t[i] = new Complex(3 * a, 0);
+                y1.multReal(2.0);
+                t[i].add(y1);
+                w.reciprocal();
+                t[i].add(Complex.divide(new Complex(s1 * 2 * b, 0), w));
+                t[i].multReal(-1.0);
+                t[i].nRoot(2);
+                t[i].multReal(s2);
+                w.multReal(s1);
+                t[i].add(w);
+                t[i].multReal(0.5);
+                if (Math.abs(t[i].imag()) > 1e-7 || t[i].real() <= 0) t[i] = null;
+                else n++;
+            }
+
         }
 
+        if (n == 0) return false; // This means that a shot simply isn't possible
+        double[] thetaList = new double[n + 1];
+        double[] phiList = new double[n + 1];
+        for (int i = 0, j = 0; i < n && j < t.length; j++) {
+            if (t[j] == null) continue;
+            double t0 = t[j].real();
+            Vector3 pf = new Vector3(P.x + V.x * t0, P.y + V.y * t0, P.z + g * t0 * t0 / 2);
+            thetaList[i] = pf.theta();
+            phiList[i] = pf.phi();
+            if (i == 0) {
+                thetaList[n] = thetaList[0];
+                phiList[n] = phiList[0];
+            } else {
+                if (phiList[i] < phiList[n]) {
+                    phiList[n] = phiList[i];
+                    thetaList[n] = thetaList[i];
+                }
+            }
+            i++;
 
-
-
+        }
+        turret.setTargetAngle((thetaList[n] - ROBOT_POSITION.heading));
+        hood.setTargetAngle(phiList[n]);
+        return true;
     }
 
     /**

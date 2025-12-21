@@ -65,6 +65,8 @@ public class Intake {
 
                 if (requestOff) {
                     requestOff = false;
+                    requestIntake = false;
+                    requestShoot = false;
                     state = State.IDLE;
                 }
 
@@ -81,6 +83,8 @@ public class Intake {
 
                 if (requestOff) {
                     requestOff = false;
+                    requestIntake = false;
+                    requestShoot = false;
                     state = State.IDLE;
                 }
 

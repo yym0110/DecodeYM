@@ -141,34 +141,40 @@ public class Shooter {
     public void update() {
         switch (state) {
             case IDLE:
-                setShooterBlocker(true);
                 aimLauncherV8();
                 setTargetVelocity(0.0);
                 setTurretAngle(targetTurretAngle);
                 setHoodAngle(targetHoodAngle);
+                setShooterBlocker(true);
+
 
                 if (aimRequest) {
+                    aimRequest = false;
                     state = State.AIMING;
                 }
                 break;
             case AIMING:
                 setShooterBlocker(true);
-                setTargetVelocity(minV0);
 
-                if (aimLauncherV8() && atVel()) {
+                if (aimLauncherV8()) {
                     state = State.READY;
                 }
 
+                setTargetVelocity(minV0);
                 setTurretAngle(targetTurretAngle);
                 setHoodAngle(targetHoodAngle);
 
                 if (stopRequest) {
+                    stopRequest = false;
+                    aimRequest = false;
+                    shootRequest = false;
                     state = State.IDLE;
                     setTargetVelocity(0.0);
                 }
                 break;
             case READY:
                 setShooterBlocker(false);
+
                 aimLauncherV8();
                 setTargetVelocity(minV0);
                 setTurretAngle(targetTurretAngle);
@@ -180,18 +186,26 @@ public class Shooter {
                 }
 
                 if (stopRequest) {
+                    stopRequest = false;
+                    aimRequest = false;
+                    shootRequest = false;
                     state = State.IDLE;
                     setTargetVelocity(0.0);
                 }
                 break;
             case SHOOT:
                 setShooterBlocker(false);
+
                 aimLauncherV8();
                 setTargetVelocity(minV0);
                 setTurretAngle(targetTurretAngle);
                 setHoodAngle(targetHoodAngle);
 
                 if (stopRequest) {
+                    stopRequest = false;
+                    aimRequest = false;
+                    shootRequest = false;
+
                     state = State.IDLE;
                     setTargetVelocity(0.0);
                     robot.intake.reqOff(true);
@@ -265,7 +279,9 @@ public class Shooter {
                 i--;
             }
         }
-        if (tRoots.isEmpty()) return false;
+        if (tRoots.isEmpty()) {
+            return false;
+        }
 
         minV0 = Math.sqrt(2 * a * tRoots.get(0) * tRoots.get(0) + c + d / 2 / tRoots.get(0)) + minV0Superthresh;
         minV0 *= minV0factor * 2 / flywheelEfficiency; // converts minV0 to min flywheel vel for triple
@@ -312,13 +328,7 @@ public class Shooter {
         return true;
     }
 
-    /**
-     * @return v0 in in/s
-     */
-    public double getBallExitSpd() {
-        return filteredVelocity * flywheelEfficiency * 0.5;
-        // the ~640 is just from the random 640 in/sec that PJ said, I have no clue what the model will be like but I suspect linear or quadratic
-    }
+    public double getBallExitSpd() { return filteredVelocity * flywheelEfficiency * 0.5; }
 
     public void setHoodAngle(double target_angle) {
         hood.setTargetAngle(target_angle);

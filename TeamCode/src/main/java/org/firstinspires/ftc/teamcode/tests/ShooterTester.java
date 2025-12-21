@@ -14,31 +14,35 @@ import org.firstinspires.ftc.teamcode.utils.RunMode;
 @Config
 @TeleOp(group = "Test")
 public class ShooterTester extends LinearOpMode {
-    public static double turretAngle = 0.0, hoodAngle = 0.7, flywheelVelocity = 0.0, rollerPower = 0.8, feedPower = 0.6, latchAngle = 0;
-    public static boolean updateVelocity = false;
+    public static boolean aimReq = false, shootReq = false, stopReq = false, intakeReq = false;
 
     public void runOpMode() {
         Globals.RUNMODE = RunMode.TESTER;
         Robot robot = new Robot(hardwareMap);
-
-        robot.intake.state = Intake.State.TEST;
-        ButtonToggle up = new ButtonToggle();
-        ButtonToggle down = new ButtonToggle();
 
         while (opModeInInit()) {
             robot.update();
         }
 
         while (!isStopRequested()) {
-            robot.shooter.setTurretAngle(turretAngle);
-            robot.shooter.setHoodAngle(hoodAngle);
-            robot.intake.roller.setTargetPower(rollerPower);
-            robot.intake.feed.setTargetPower(feedPower);
-            robot.shooter.setShooterBlocker(false);
+            if (intakeReq) {
+                robot.intake.reqIntake(true);
+                intakeReq = false;
+            }
 
-            if (updateVelocity) {
-                robot.shooter.setTargetVelocity(flywheelVelocity);
-                updateVelocity = false;
+            if (aimReq) {
+                robot.shooter.reqAim(true);
+                aimReq = false;
+            }
+
+            if (shootReq) {
+                robot.shooter.reqShoot(true);
+                shootReq = false;
+            }
+
+            if (stopReq) {
+                robot.shooter.reqStop(true);
+                stopReq = false;
             }
 
             robot.update();

@@ -282,7 +282,11 @@ public class Shooter {
         minV0 = Math.sqrt(2 * a * tRoots.get(0) * tRoots.get(0) + c + d / 2 / tRoots.get(0)) + minV0Superthresh;
         minV0 *= minV0factor * 2 / flywheelEfficiency; // converts minV0 to min flywheel vel for triple
 
-        double v0 = filteredVelocity * flywheelEfficiency * 0.5;
+        double v0 = getBallExitSpd();
+        if (V.getMag() < 0.1) {
+            targetTurretAngle = AngleUtil.clipAngle(Math.atan2(P.getY(), P.getX()) - ROBOT_POSITION.heading);
+            targetHoodAngle = Math.PI / 2 - Math.asin(2 * g * P.getMag() / (v0 * v0)) / 2 - phiLim;
+        }
         c -= v0 * v0;
 
         tRoots = Polynomial.findRealRoots(new double[]{1, 0, c/a, d/a, e/a}, 1e-4);

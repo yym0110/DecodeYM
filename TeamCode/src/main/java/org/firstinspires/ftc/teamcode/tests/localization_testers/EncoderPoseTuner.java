@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tests.localization_testers;
 
+import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -31,6 +33,7 @@ public class EncoderPoseTuner extends LinearOpMode {
             telemetry.addData("leftOdoRadius", (robot.drivetrain.leftRear.motor[0].getCurrentPosition() - leftInitial) * robot.drivetrain.mergeLocalizer.encoders[0].ticksToInches/theta + "");
             telemetry.addData("rightOdoRadius", (robot.drivetrain.leftFront.motor[0].getCurrentPosition() - rightInitial) * robot.drivetrain.mergeLocalizer.encoders[1].ticksToInches/theta + "");
             telemetry.addData("backOdoRadius", (robot.drivetrain.rightFront.motor[0].getCurrentPosition() - backInitial) * robot.drivetrain.mergeLocalizer.encoders[2].ticksToInches/theta + "");
+            telemetry.addData("heading", ROBOT_POSITION.heading);
             telemetry.update();
         }
     }

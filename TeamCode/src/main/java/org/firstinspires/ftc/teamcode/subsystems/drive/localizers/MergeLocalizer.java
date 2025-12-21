@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subsystems.drive.localizers;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_POSITION;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -20,7 +22,7 @@ public class MergeLocalizer extends Localizer{
         super(sensors, drivetrain, color, expectedColor);
 
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-        pinpoint.setOffsets(72, -160, DistanceUnit.MM);
+        pinpoint.setOffsets(70, -124, DistanceUnit.MM);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
     }
@@ -62,7 +64,8 @@ public class MergeLocalizer extends Localizer{
         constAccelMath.calculate(loopTime, relDelta, currentPose);
 
         // PINPOINT
-        if (currentPose.getDistanceFromPoint(currPinpointPose) >= 24.0 || constantCorrection) {
+        if ((currPinpointPose != null && currentPose.getDistanceFromPoint(currPinpointPose) >= 24.0) || constantCorrection) {
+            Log.i("Localization Test", "pinpoint in use");
             pinpoint.update();
             double timeStamp = System.nanoTime();
             lastPinpointPose = currPinpointPose.clone();
@@ -150,7 +153,7 @@ public class MergeLocalizer extends Localizer{
         super.setPoseEstimate(pose);
         pinpoint.setPosition(new Pose2D (DistanceUnit.INCH, pose.x, pose.y, AngleUnit.RADIANS, pose.heading));
         currPinpointPose = pose.clone();
-        currPinpointPose = pose.clone();
+        lastPinpointPose = pose.clone();
         lastPinpointUpdate = System.currentTimeMillis();
     }
 

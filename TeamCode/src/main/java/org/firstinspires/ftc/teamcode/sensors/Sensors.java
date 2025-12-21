@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 
 import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.utils.AngleUtil;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
@@ -41,9 +42,9 @@ public class Sensors {
         currentTime = System.nanoTime();
         loopTime = (currentTime - lastTime) / 1e9;
 
-        odoWheelPositions[0] = robot.drivetrain.rightFront.motor[0].getCurrentPosition(); // left
-        odoWheelPositions[1] = robot.drivetrain.leftRear.motor[0].getCurrentPosition(); // right
-        odoWheelPositions[2] = robot.drivetrain.leftFront.motor[0].getCurrentPosition(); // back
+        odoWheelPositions[0] = robot.drivetrain.leftRear.motor[0].getCurrentPosition(); // left
+        odoWheelPositions[1] = robot.drivetrain.leftFront.motor[0].getCurrentPosition(); // right
+        odoWheelPositions[2] = robot.drivetrain.rightFront.motor[0].getCurrentPosition(); // back
 
         double flywheelPos = robot.drivetrain.rightRear.motor[0].getCurrentPosition();
 
@@ -52,7 +53,10 @@ public class Sensors {
         flywheelVelocity = flywheelAngularVel * 96.0 * Math.PI / 25.4;
 
         robot.drivetrain.mergeLocalizer.updateEncoders(odoWheelPositions);
+        robot.drivetrain.mergeLocalizer.update();
         ROBOT_POSITION = robot.drivetrain.mergeLocalizer.getPoseEstimate();
+        ROBOT_POSITION.heading = AngleUtil.clipAngle(ROBOT_POSITION.heading);
+
         ROBOT_VELOCITY = robot.drivetrain.mergeLocalizer.getRelativePoseVelocity();
 
         if (System.currentTimeMillis() - lastVoltageUpdatedTime > voltageUpdateTime) {

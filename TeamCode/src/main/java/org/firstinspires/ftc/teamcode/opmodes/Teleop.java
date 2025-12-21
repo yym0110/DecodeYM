@@ -88,11 +88,11 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("Alliance", Globals.isRed ? "Red" : "Blue");
             telemetry.addData("intakeOn", intakeOn);
             telemetry.addData("intakeReversed", intakeReversed);
-            telemetry.addData("intakePower", robot.intake.roller.getPower());
-            telemetry.addData("feedPower", robot.intake.feed.getPower());
-            telemetry.addData("flywheelOn", flywheelOn);
-            telemetry.addData("flywheelAtVel", robot.shooter.atVel());
-            telemetry.addData("flywheel target velocity", robot.shooter.getTargetVelocity());
+            telemetry.addData("shotPossible", robot.shooter.aimLauncherV8() ? "YES" : "NO");
+            telemetry.addData("shotReady", robot.shooter.state == Shooter.State.READY ? "YES" : "NO NOW GO BACK TO DRIVING");
+            telemetry.addData("recommendedVel", robot.shooter.getTargetVelocity());
+            telemetry.addData("currentVel", robot.shooter.getFilteredVelocity());
+            telemetry.addData("recommendedHoodAngle", robot.shooter.targetHoodAngle);
 
             telemetry.update();
         }

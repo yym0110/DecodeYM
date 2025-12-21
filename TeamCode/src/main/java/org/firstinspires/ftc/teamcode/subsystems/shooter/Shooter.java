@@ -136,7 +136,6 @@ public class Shooter {
                 if (aimRequest) {
                     state = State.AIMING;
                 }
-
                 break;
             case AIMING:
                 setFlywheelBlocker(true);
@@ -148,7 +147,7 @@ public class Shooter {
 
                 if (stopRequest) {
                     state = State.IDLE;
-                    setTurretAngle(0.0);
+                    setTargetVelocity(0.0);
                 }
                 break;
             case READY:
@@ -163,7 +162,7 @@ public class Shooter {
 
                 if (stopRequest) {
                     state = State.IDLE;
-                    setTurretAngle(0.0);
+                    setTargetVelocity(0.0);
                 }
                 break;
             case SHOOT:
@@ -173,7 +172,7 @@ public class Shooter {
 
                 if (stopRequest) {
                     state = State.IDLE;
-                    setTurretAngle(0.0);
+                    setTargetVelocity(0.0);
                     robot.intake.reqOff(true);
                 }
                 break;
@@ -181,11 +180,10 @@ public class Shooter {
                 break;
         }
 
-
         // Flywheel Velocity PID
         if (targetVelocity <= 1) velocityPID.resetIntegral();
         else velocityPID.clipIntegral(-1, 1);
-        double actualVelocity = robot.sensors.getFlywheelVelocity();
+        double actualVelocity = robot.sensors.getFlywheelAngularVel();
         if (Math.abs(actualVelocity - filteredVelocity) < velocityFilterThresh) {
             filteredVelocity = filteredVelocity * (1 - velocityFilterLow) + actualVelocity * velocityFilterLow;
         } else {
@@ -221,10 +219,10 @@ public class Shooter {
      * The turret will operate in a system where facing the control hub is "0" to accommodate for (assuming intake side 0) -90 + 270 range of motion
      */
     public void setTurretAngle (double targetAngle) {
-        turret.setTargetAngle(targetAngle + Math.PI / 2);
+        turret.setTargetAngle(targetAngle);
 
-        TelemetryUtil.packet.put("Shooter : turretAngle", targetAngle + Math.PI / 2);
-        LogUtil.turretAngle.set(targetAngle + Math.PI / 2);
+        TelemetryUtil.packet.put("Shooter : turretAngle", targetAngle);
+        LogUtil.turretAngle.set(targetAngle);
     }
 
     public boolean aimLauncherV8() {

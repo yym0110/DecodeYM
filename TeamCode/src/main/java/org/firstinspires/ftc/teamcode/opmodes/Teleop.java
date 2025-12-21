@@ -30,19 +30,11 @@ public class Teleop extends LinearOpMode {
         ButtonToggle rb1 = new ButtonToggle();
         ButtonToggle a1 = new ButtonToggle();
         ButtonToggle b1 = new ButtonToggle();
-        ButtonToggle x1 = new ButtonToggle();
-        ButtonToggle y1 = new ButtonToggle();
-
-        ButtonToggle a2 = new ButtonToggle();
-        ButtonToggle b2 = new ButtonToggle();
-        ButtonToggle x2 = new ButtonToggle();
-        ButtonToggle y2 = new ButtonToggle();
 
         boolean intakeReversed = false;
         boolean intakeOn = false;
         boolean flywheelOn = false;
-        boolean atSpeedRumble = false;
-        boolean firstLoop = false;
+        boolean firstLoop = true;
 
 
         while (opModeInInit()) robot.update();
@@ -50,7 +42,6 @@ public class Teleop extends LinearOpMode {
         if (!isStopRequested()) LogUtil.init();
 
         LogUtil.drivePositionReset = true;
-        // robot.shooter.goalDetector.start();
 
         while (!isStopRequested()) {
             robot.update();
@@ -77,6 +68,14 @@ public class Teleop extends LinearOpMode {
             // SHOOTER
             if (b1.isClicked(gamepad1.b)) {
                 robot.shooter.reqAim(true);
+            }
+
+            // rumble when ready to shoot
+            if (robot.shooter.state == Shooter.State.READY && firstLoop) {
+                gamepad1.rumble(150);
+                firstLoop = false;
+            } else if (robot.shooter.state != Shooter.State.READY) {
+                firstLoop = true;
             }
 
             if (rb1.isClicked(gamepad1.right_bumper)) {

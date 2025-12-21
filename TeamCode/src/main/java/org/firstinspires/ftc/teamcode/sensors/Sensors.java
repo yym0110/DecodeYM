@@ -18,10 +18,8 @@ public class Sensors {
 
     private int[] odoWheelPositions = {0, 0, 0};
 
-    // 426 mm (16.772 in) is belt circumference
-    // start: 42638
-    // end: 43062
-    private double flywheelVelocity, ticksToInches = 16.772 / (43062 - 42638), flywheelVelo2, flywheelLastPos = 0;
+    // Enocder Resolution: 28 PPR
+    private double flywheelAngularVel = 0, flywheelLastPos = 0;
 
     private double voltage;
     private final double voltageUpdateTime = 5000;
@@ -38,8 +36,9 @@ public class Sensors {
         odoWheelPositions[2] = robot.drivetrain.leftFront.motor[0].getCurrentPosition(); // back
 
         double flywheelPos = robot.drivetrain.rightRear.motor[0].getCurrentPosition();
-        flywheelVelocity = robot.drivetrain.rightRear.getVelocity() * ticksToInches;
-        flywheelVelo2 = (flywheelPos - flywheelLastPos) / loopTime * ticksToInches;
+
+        // (flywheelPos - flywheelLastPos) / 28.0 = delta revolutions
+        flywheelAngularVel = (((flywheelPos - flywheelLastPos) / 28.0) / (2 * Math.PI)) / loopTime;
         flywheelLastPos = flywheelPos;
 
         if (System.currentTimeMillis() - lastVoltageUpdatedTime > voltageUpdateTime) {
@@ -53,7 +52,11 @@ public class Sensors {
     // Odometry
     public int[] getOdometry() {return odoWheelPositions;}
 
-    public double getFlywheelVelocity () { return flywheelVelocity; }
+    /**
+     *
+     * @return radians / sec
+     */
+    public double getFlywheelAngularVel () { return flywheelAngularVel;}
 
     public double getVoltage() {
         return voltage;
@@ -61,7 +64,6 @@ public class Sensors {
 
     private void updateTelemetry() {
         TelemetryUtil.packet.put("Voltage", voltage);
-        TelemetryUtil.packet.put("Shooter : Flywheel velocity", flywheelVelocity);
-        TelemetryUtil.packet.put("Shooter : Flywheel velocity 2", flywheelVelo2);
+        TelemetryUtil.packet.put("Shooter : Flywheel Angular Velocity", flywheelAngularVel);
     }
 }

@@ -107,20 +107,22 @@ public class MergeLocalizer extends Localizer{
             result = drivetrain.vision.getResult();
 
             if (result != null && result.isValid() && result.getStaleness() < lastStaleness) {
-                int index = 0;
                 double timeStamp = System.nanoTime() - result.getStaleness();
+                lastStaleness = result.getStaleness();
+
+                int index = 0;
                 while (index < Shooter.nanoTimes.size() && Shooter.nanoTimes.get(index) - timeStamp > 0) {
                     index++;
                 }
 
                 // TODO: Derive math again, there is monkey business afoot
                 // TODO: Also translate ts to the center of the robot
-                double D = (Globals.tagHeight - drivetrain.vision.cameraHeight) / Math.tan(drivetrain.vision.cameraAngle + result.getTy());
+                double D = (Globals.tagHeight - drivetrain.vision.cameraHeight) / Math.tan(drivetrain.vision.cameraAngle + result.getTx());
 
                 Pose2d globalLimelightEstimate = new Pose2d (
-                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.cos(Shooter.turretHistory.get(index) - result.getTx()),
-                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.sin(Shooter.turretHistory.get(index) - result.getTx()),
-                        Shooter.turretHistory.get(index) - result.getTx()
+                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.cos(Shooter.turretHistory.get(index) - result.getTy()),
+                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.sin(Shooter.turretHistory.get(index) - result.getTy()),
+                        Shooter.turretHistory.get(index) - result.getTy()
                 );
 
                 currentPose.x = currentPose.x * 0.8 + globalLimelightEstimate.x * 0.2;

@@ -131,7 +131,6 @@ public class MergeLocalizer extends Localizer{
             }
         }
 
-
         // UPDATE HISOTRY
 
         x = currentPose.x;
@@ -158,4 +157,6 @@ public class MergeLocalizer extends Localizer{
     public void setConstantPinpoint (boolean toggle) { constantCorrection = toggle; }
 
     public void setLimelightToggle (boolean toggle) { limelightToggle = toggle; }
+
+    public double getInstantaneousAngularVel () { return poseHistory.size() >= 2 ? (poseHistory.get(0).heading - poseHistory.get(1).heading) / (nanoTimes.get(0) - nanoTimes.get(1)) : 0; }
 }

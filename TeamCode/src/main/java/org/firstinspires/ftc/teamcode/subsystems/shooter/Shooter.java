@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.utils.Globals.ROBOT_VELOCITY;
 import static org.firstinspires.ftc.teamcode.utils.Globals.blueTag;
 import static org.firstinspires.ftc.teamcode.utils.Globals.redTag;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -97,7 +99,6 @@ public class Shooter {
             new boolean[] {false, false},
             2, 5
         );
-        //turret.maxPower = 0.8;
 
         nanoTimes = new ArrayList<>();
         turretHistory = new ArrayList<>();
@@ -270,6 +271,7 @@ public class Shooter {
 
         minV0 = Math.sqrt(2 * a * minPhiT0 * minPhiT0 + c + d / 2 / minPhiT0) + minV0Superthresh;
         setTurretAngle((thetas[tRoots.size()] - ROBOT_POSITION.heading)); // converts from global to difference with heading
+        Log.i ("AutoAim Turret Angle", (thetas[tRoots.size()] - ROBOT_POSITION.heading) + "");
         hood.setTargetAngle(phis[tRoots.size()]);
         return true;
         // currently doesn't solve the thing twice, where the v0 is set to minV0 + superThresh

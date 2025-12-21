@@ -47,9 +47,9 @@ public class LocalizationTest extends LinearOpMode {
             TelemetryUtil.packet.put("Localizer x: ", pos.x);
             TelemetryUtil.packet.put("Localizer y: ", pos.y);
             TelemetryUtil.packet.put("Localizer heading: ", pos.heading / Math.PI * 180);
-            TelemetryUtil.packet.put("odo encoder 0", ((PriorityMotor) robot.hardwareQueue.getDevice("rightFront")).motor[0].getCurrentPosition());
-            TelemetryUtil.packet.put("odo encoder 1", ((PriorityMotor) robot.hardwareQueue.getDevice("leftRear")).motor[0].getCurrentPosition());
-            TelemetryUtil.packet.put("odo encoder 2", ((PriorityMotor) robot.hardwareQueue.getDevice("leftFront")).motor[0].getCurrentPosition());
+            TelemetryUtil.packet.put("odo encoder 0 (back)", ((PriorityMotor) robot.hardwareQueue.getDevice("rightFront")).motor[0].getCurrentPosition());
+            TelemetryUtil.packet.put("odo encoder 1 (right)", ((PriorityMotor) robot.hardwareQueue.getDevice("leftRear")).motor[0].getCurrentPosition());
+            TelemetryUtil.packet.put("odo encoder 2 (left)", ((PriorityMotor) robot.hardwareQueue.getDevice("leftFront")).motor[0].getCurrentPosition());
 
             robot.update();
 

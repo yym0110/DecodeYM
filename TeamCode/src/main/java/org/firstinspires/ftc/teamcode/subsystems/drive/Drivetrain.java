@@ -46,12 +46,14 @@ public class Drivetrain {
     private final List<PriorityMotor> motors;
 
     public Robot robot;
+    public Localizer localizer;
     public MergeLocalizer mergeLocalizer;
     public Vision vision;
     private final HardwareQueue hardwareQueue;
     private final Sensors sensors;
 
     public Drivetrain(Robot robot, Vision vision) {
+        this.vision = vision;
         this.robot = robot;
         this.hardwareQueue = robot.hardwareQueue;
         this.sensors = robot.sensors;
@@ -82,7 +84,8 @@ public class Drivetrain {
         configureMotors();
         setMinPowersToOvercomeFriction(1.0);
 
-        mergeLocalizer = new MergeLocalizer (robot.hardwareMap, robot.sensors, this, "#ffff00", "#00ffff");
+        localizer = new Localizer (robot.sensors, this, "#00ff00", "#ff0000");
+        mergeLocalizer = new MergeLocalizer (robot.hardwareMap, robot.sensors, this, "#0000ff", "#ffffff");
     }
 
     public void configureMotors() {

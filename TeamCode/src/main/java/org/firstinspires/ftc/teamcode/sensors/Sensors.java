@@ -52,8 +52,12 @@ public class Sensors {
         flywheelAngularVel = robot.drivetrain.rightRear.getVelocity() / 28.0;
         flywheelVelocity = flywheelAngularVel * 96.0 * Math.PI / 25.4;
 
+        robot.drivetrain.localizer.updateEncoders(odoWheelPositions);
+        robot.drivetrain.localizer.update();
+
         robot.drivetrain.mergeLocalizer.updateEncoders(odoWheelPositions);
         robot.drivetrain.mergeLocalizer.update();
+
         ROBOT_POSITION = robot.drivetrain.mergeLocalizer.getPoseEstimate();
         ROBOT_POSITION.heading = AngleUtil.clipAngle(ROBOT_POSITION.heading);
 

@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.vision.Vision;
 
 public class MergeLocalizer extends Localizer{
@@ -23,13 +24,13 @@ public class MergeLocalizer extends Localizer{
 
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         pinpoint.setOffsets(70, -124, DistanceUnit.MM);
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
     }
 
     // Pinpoint
     private GoBildaPinpointDriver pinpoint;
-    private Pose2d currPinpointPose = null, lastPinpointPose = null;
+    private Pose2d currPinpointPose = null, lastPinpointPose = null, lastPinpointMergePose = null;
     private double lastPinpointUpdate;
     private boolean constantCorrection = false;
 
@@ -62,8 +63,10 @@ public class MergeLocalizer extends Localizer{
 
         Pose2d relDelta = new Pose2d (relDeltaX,relDeltaY,deltaHeading);
         constAccelMath.calculate(loopTime, relDelta, currentPose);
-        /*
+
+
         // PINPOINT
+
         if ((currPinpointPose != null && currentPose.getDistanceFromPoint(currPinpointPose) >= 24.0) || constantCorrection) {
             Log.i("Localization Test", "pinpoint in use");
             pinpoint.update();
@@ -71,15 +74,18 @@ public class MergeLocalizer extends Localizer{
             lastPinpointPose = currPinpointPose.clone();
             currPinpointPose = new Pose2d (pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading());
 
+            /*
             // find closest pose to last poll time
             int index = 0;
-            while (index < nanoTimes.size() && nanoTimes.get(index) - lastPinpointUpdate > 0) {
+            while (index < nanoTimes.size() && nanoTimes.get(index) - lastPinpointUpdate < 0) {
                 index++;
             }
 
             if (index == nanoTimes.size()){
                 index = nanoTimes.size()-1; // death to 10000000000 children
+                Log.i ("Localization", "death to 10000000000 children");
             }
+             */
 
             Pose2d globalPinpointDelta = new Pose2d (
                     currPinpointPose.x - lastPinpointPose.x,
@@ -94,23 +100,23 @@ public class MergeLocalizer extends Localizer{
             );
 
             Pose2d globalPinpointEstimate = new Pose2d (
-                    poseHistory.get(index).x + Math.cos(poseHistory.get(index).heading) * relPinpointDelta.x - Math.sin(poseHistory.get(index).heading) * relPinpointDelta.y,
-                    poseHistory.get(index).y + Math.sin(poseHistory.get(index).heading) * relPinpointDelta.x + Math.cos(poseHistory.get(index).heading) * relPinpointDelta.y,
-                    poseHistory.get(index).heading + relPinpointDelta.heading
+                    lastPinpointMergePose.x + Math.cos(lastPinpointMergePose.heading) * relPinpointDelta.x - Math.sin(lastPinpointMergePose.heading) * relPinpointDelta.y,
+                    lastPinpointMergePose.y + Math.sin(lastPinpointMergePose.heading) * relPinpointDelta.x + Math.cos(lastPinpointMergePose.heading) * relPinpointDelta.y,
+                    lastPinpointMergePose.heading + relPinpointDelta.heading
             );
 
+            lastPinpointMergePose = globalPinpointEstimate.clone();
             currentPose = globalPinpointEstimate.clone();
             lastPinpointUpdate = timeStamp;
         }
-        */
-        // LIMELIGHT
 
+        // LIMELIGHT
+        /*
         if (limelightToggle) {
             drivetrain.vision.update();
             result = drivetrain.vision.getResult();
 
             if (result != null && result.isValid() && result.getStaleness() < lastStaleness) {
-                double timeStamp = System.nanoTime() - result.getStaleness();
                 lastStaleness = result.getStaleness();
 
                 int index = 0;
@@ -120,12 +126,12 @@ public class MergeLocalizer extends Localizer{
 
                 // TODO: Derive math again, there is monkey business afoot
                 // TODO: Also translate ts to the center of the robot
-                double D = (Globals.tagHeight - drivetrain.vision.cameraHeight) / Math.tan(drivetrain.vision.cameraAngle + result.getTx());
+                double D = (Globals.tagHeight - drivetrain.vision.cameraHeight) / Math.tan(drivetrain.vision.cameraAngle + Math.toRadians(result.getTx()));
 
                 Pose2d globalLimelightEstimate = new Pose2d (
-                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.cos(Shooter.turretHistory.get(index) + poseHistory.get(index).heading - result.getTy()),
-                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.sin(Shooter.turretHistory.get(index) + poseHistory.get(index).heading - result.getTy()),
-                        Shooter.turretHistory.get(index) + poseHistory.get(index).heading - result.getTy()
+                        (Globals.isRed ? Globals.redTag.x : Globals.blueTag.x) - D * Math.cos(Shooter.turretHistory.get(index) + poseHistory.get(index).heading - Math.toRadians(result.getTy())),
+                        (Globals.isRed ? Globals.redTag.y : Globals.blueTag.y) - D * Math.sin(Shooter.turretHistory.get(index) + poseHistory.get(index).heading - Math.toRadians(result.getTy())),
+                        Shooter.turretHistory.get(index) + poseHistory.get(index).heading - Math.toRadians(result.getTy())
                 );
 
                 currentPose.x = currentPose.x * 0.8 + globalLimelightEstimate.x * 0.2;
@@ -133,6 +139,7 @@ public class MergeLocalizer extends Localizer{
                 currentPose.heading = currentPose.heading * 0.8 + globalLimelightEstimate.heading * 0.2;
             }
         }
+        */
 
         // UPDATE HISOTRY
 
@@ -154,6 +161,7 @@ public class MergeLocalizer extends Localizer{
         pinpoint.setPosition(new Pose2D (DistanceUnit.INCH, pose.x, pose.y, AngleUnit.RADIANS, pose.heading));
         currPinpointPose = pose.clone();
         lastPinpointPose = pose.clone();
+        lastPinpointMergePose = pose.clone();
         lastPinpointUpdate = System.currentTimeMillis();
     }
 
@@ -162,4 +170,12 @@ public class MergeLocalizer extends Localizer{
     public void setLimelightToggle (boolean toggle) { limelightToggle = toggle; }
 
     public double getInstantaneousAngularVel () { return poseHistory.size() >= 2 ? (poseHistory.get(0).heading - poseHistory.get(1).heading) / (nanoTimes.get(0) - nanoTimes.get(1)) : 0; }
+
+    public void updateField() {
+        super.updateField();
+
+        TelemetryUtil.packet.put(this.getClass().getSimpleName() + "Pinpoint x", pinpoint.getPosX());
+        TelemetryUtil.packet.put(this.getClass().getSimpleName() + "Pinpoint y", pinpoint.getPosY());
+        TelemetryUtil.packet.put(this.getClass().getSimpleName() + "Pinpoint heading", pinpoint.getHeading());
+    }
 }

@@ -273,6 +273,6 @@ public class Localizer {
 
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
         DashboardUtil.drawRobot(fieldOverlay, getPoseEstimate(), color);
-        DashboardUtil.drawRobot(fieldOverlay, expected, expectedColor);
+        //DashboardUtil.drawRobot(fieldOverlay, expected, expectedColor);
     }
 }

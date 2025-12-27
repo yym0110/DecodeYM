@@ -27,7 +27,8 @@ public class nTeleop extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         robot.setStopChecker(this::isStopRequested);
 
-        robot.shooter.state = Shooter.State.TEST;
+        robot.shooter.state = Shooter.State.IDLE;
+        robot.intake.state = Intake.State.IDLE;
 
         robot.drivetrain.setPoseEstimate(AUTO_ENDING_POSE);
 
@@ -44,12 +45,14 @@ public class nTeleop extends LinearOpMode {
         ButtonToggle b2 = new ButtonToggle();
         ButtonToggle x2 = new ButtonToggle();
         ButtonToggle y2 = new ButtonToggle();
+        ButtonToggle options = new ButtonToggle();
 
         boolean intakeReversed = false;
         boolean intakeOn = false;
         boolean flywheelOn = false;
         boolean atSpeedRumble = false;
         boolean firstLoop = true;
+        boolean manualOn = false;
         Shooter.Dist dist = Shooter.Dist.OFF;
 
         while (opModeInInit());
@@ -89,6 +92,19 @@ public class nTeleop extends LinearOpMode {
                 atSpeedRumble = false;
             }
 
+
+            if (b1.isClicked(gamepad1.b)){
+                robot.shooter.state = Shooter.State.IDLE;
+            }
+            if (x1.isClicked(gamepad1.x)){
+                robot.shooter.reqAim(true);
+            }
+            if (gamepad1.right_trigger > 0.6){
+                robot.shooter.reqIndex(true);
+            }
+            if (y1.isClicked(gamepad1.y)){
+                robot.intake.reqShoot(true);
+            }
             if (gamepad1.right_bumper) {
                 rb1.isReleased(gamepad1.right_bumper);
                 robot.shooter.setShooterBlocker(false);
@@ -101,6 +117,12 @@ public class nTeleop extends LinearOpMode {
                 robot.intake.reqOff(true);
                 // robot.intake.feed.setTargetPower(intakeOn ? (intakeReversed ? -idleFeedPower : idleFeedPower) : 0);
             }
+            // manual shooting
+            if (options.isClicked(gamepad1.options)) {
+                manualOn = !manualOn;
+                robot.shooter.reqManual(manualOn);
+            }
+
             /*
             if (b1.isClicked(gamepad1.b)) {
                 robot.shooter.reqAim(true);

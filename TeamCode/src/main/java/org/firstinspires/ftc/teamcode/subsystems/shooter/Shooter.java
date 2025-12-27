@@ -38,6 +38,9 @@ public class Shooter {
         AIMING,
         READY,
         SHOOT,
+        INDEX,
+        INDEXING,
+        MANUAL,
         TEST
     } public State state = State.IDLE;
 
@@ -45,12 +48,12 @@ public class Shooter {
     private final Sensors sensors;
     private final DcMotorEx ms1, ms2;
     public final PriorityMotor flywheel;
-    public final nPriorityServo turret, hood, flywheelBlocker, net;
+    public final nPriorityServo turret, hood, flywheelBlocker, net, kicker;
 
     public static ArrayList<Long> nanoTimes;
     public static ArrayList<Double> turretHistory;
 
-    private boolean aimRequest = false, shootRequest = false, stopRequest = false;
+    private boolean aimRequest = false, shootRequest = false, stopRequest = false, reAimRequest = false, manualRequest = false, indexRequest = false;
 
     // velocity is in inches / second
     public static PID velocityPID = new PID (0.0, 0.0002, 0.0001);
@@ -84,6 +87,8 @@ public class Shooter {
     public double phiLim = 34.0 * Math.PI / 180;
     private final double c1 = (58.3414785 + 72) / (55.6424675 - 48);
     private final double c2 = c1 * 48 - 72;
+    private int moves;
+    private boolean index;
 
     public Shooter(Robot robot) {
         this.robot = robot;
@@ -100,6 +105,14 @@ public class Shooter {
             0.027, 0.4, 0.03,
             new boolean[] {false},
             2, 5
+        );
+
+        kicker = new nPriorityServo(
+                new Servo[]{robot.hardwareMap.get(Servo.class, "kicker")},
+                "kicker", nPriorityServo.ServoType.AXON_MICRO,
+                0.027, 0.4, 0.03,
+                new boolean[] {false},
+                2, 5
         );
 
         turret = new nPriorityServo(
@@ -154,6 +167,33 @@ public class Shooter {
                     aimRequest = false;
                     state = State.AIMING;
                 }
+                if (manualRequest) {
+                    manualRequest = false;
+                    state = State.MANUAL;
+                }
+                if (indexRequest) {
+                    indexRequest = false;
+                    state = State.INDEX;
+                }
+                break;
+            case MANUAL:
+                setShooter(dist);
+            case INDEX:
+                calcIndexPosition(0,0); // get values from LL
+                state = State.INDEXING;
+                break;
+            case INDEXING:
+                setShooterBlocker(true);
+                setKicker(0);
+                // have the feeder and whatever contraption push balls forward
+                if(moves > 0){
+                    moves--;
+                    index = true;
+                    state = State.SHOOT;
+                    break;
+                }
+                reqIndex(false);
+                state = State.IDLE;
                 break;
             case AIMING:
                 setShooterBlocker(true);
@@ -161,7 +201,6 @@ public class Shooter {
                 if (aimLauncherV8()) {
                     state = State.READY;
                 }
-
                 setTargetVelocity(minFlywheelVelocity);
                 setTurretAngle(targetTurretAngle);
                 setHoodAngle(targetHoodAngle);
@@ -171,7 +210,6 @@ public class Shooter {
                     aimRequest = false;
                     shootRequest = false;
                     state = State.IDLE;
-                    setTargetVelocity(0.0);
                 }
                 break;
             case READY:
@@ -197,11 +235,20 @@ public class Shooter {
                 break;
             case SHOOT:
                 setShooterBlocker(false);
-
-                aimLauncherV8();
-                setTargetVelocity(minFlywheelVelocity);
-                setTurretAngle(targetTurretAngle);
-                setHoodAngle(targetHoodAngle);
+                if (index) {
+                    setTargetVelocity(60); //test optimal
+                    setHoodAngle(0.8); //test optimal
+                    setKicker(4.0); //test optimal
+                    index = false;
+                    if(kicker.inPosition()){
+                        state = State.INDEXING;
+                    }
+                } else {
+                    aimLauncherV8();
+                    setTargetVelocity(minFlywheelVelocity);
+                    setTurretAngle(targetTurretAngle);
+                    setHoodAngle(targetHoodAngle);
+                }
 
                 if (stopRequest) {
                     stopRequest = false;
@@ -211,6 +258,11 @@ public class Shooter {
                     state = State.IDLE;
                     setTargetVelocity(0.0);
                     robot.intake.reqOff(true);
+                }
+                if (reAimRequest) {
+                    reAimRequest = false;
+                    state = State.AIMING;
+                    robot.intake.reqShoot(false);
                 }
                 break;
             case TEST: // LEAVE THIS EMPTY AT ALL TIMES
@@ -250,6 +302,12 @@ public class Shooter {
 
     public void reqStop (boolean req) { stopRequest = req; }
 
+    public void reqReAim (boolean req) { reAimRequest = req; }
+
+    public void reqManual (boolean req) { manualRequest = req; }
+
+    public void reqIndex (boolean req) { indexRequest = req; }
+
     public void setTurretAngle (double targetAngle) {
         turret.setTargetAngle(targetAngle);
 
@@ -272,18 +330,23 @@ public class Shooter {
 
     public void setShooterBlocker(boolean active) { flywheelBlocker.setTargetAngle(active ? latchBlockAngle : -0.2);}
 
+    public int calcIndexPosition(int greenPos, int motifPos){
+        moves = (motifPos - greenPos)%3;
+        return moves;
+    }
+
     public boolean turretTrackTarget() {
-        if (ROBOT_POSITION != null) targetTurretAngle = AngleUtil.clipAngle(Math.atan2(P.getY(), P.getX()) - ROBOT_POSITION.heading);
-        else return false;
-        return true;
+        if (ROBOT_POSITION == null || ROBOT_VELOCITY == null) return false;
+        // targetTurretAngle = AngleUtil.clipAngle(Math.atan2(P.getY(), P.getX()) - ROBOT_POSITION.heading);
         // above works
-        // below needs testing, meant to fit the 90 left, 270 right angle turret configuration
-        // targetTurretAngle = AngleUtil.clipAngle(Math.atan2(P.getY(), P.getX()) - ROBOT_POSITION.heading - Math.PI / 2) + Math.PI / 2;
+        // below needs testing
+        targetTurretAngle = AngleUtil.clipAngle(Math.atan2(P.getY(), P.getX()) - ROBOT_POSITION.heading - Math.PI / 2) + Math.PI / 2;
+        return true;
     }
 
     public void updateAimingConstants() {
         if (ROBOT_POSITION == null || ROBOT_VELOCITY == null) return;
-        P = new Vector3(ballTarget); // TODO: change this target to account for distance
+        P = new Vector3(ballTarget); // we'll figure out whether we need to change this target based on distance
         P.subtract(new Vector3(ROBOT_POSITION.x, ROBOT_POSITION.y, launcherHeight));
         V = new Vector3(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y, 0); // TODO: need to subtract robot angular vel component thing to this
 
@@ -345,9 +408,16 @@ public class Shooter {
                     thetas[tRoots.size()] = thetas[0];
                     phis[tRoots.size()] = phis[0];
                 } else {
-                    if (phis[i] > phis[tRoots.size()]) {
-                        phis[tRoots.size()] = phis[i];
-                        thetas[tRoots.size()] = thetas[i];
+                    if (phis[i] != 100) {
+                        if (phis[tRoots.size()] != 100) {
+                            if (phis[i] > phis[tRoots.size()]) {
+                                phis[tRoots.size()] = phis[i];
+                                thetas[tRoots.size()] = thetas[i];
+                            }
+                        } else {
+                            phis[tRoots.size()] = phis[i];
+                            thetas[tRoots.size()] = thetas[i];
+                        }
                     }
                 }
             }
@@ -381,14 +451,16 @@ public class Shooter {
                 phis[i] = pf.phi();
 
 
-                double slope = c1 * (ROBOT_VELOCITY.y + v0 * Math.sin(thetas[i]) * Math.sin(phis[i])) - (ROBOT_VELOCITY.x + v0 * Math.cos(thetas[i]) * Math.sin(phis[i]));
-                if ((int)slope == 0) {
-                    phis[i] = 100;
+                double vel = Math.pow(ROBOT_VELOCITY.y + v0 * Math.sin(thetas[i]) * Math.sin(phis[i]), 2) + Math.pow(ROBOT_VELOCITY.x + v0 * Math.cos(thetas[i]) * Math.sin(phis[i]), 2);
+                vel = Math.sqrt(vel);
+                double dist = Math.pow(-60 - ROBOT_POSITION.x, 2) + Math.pow(ballTarget.y - ROBOT_POSITION.y, 2);
+                dist = Math.sqrt(dist);
+                double t = dist / vel;
+                if (t <= 0) {
+                    phis[i] = 100; // this makes sure the ball goes into the target through the restricted diagonal plane
                 } else {
-                    double t = (c1 * (48 - ROBOT_POSITION.y) + 72 + ROBOT_POSITION.x) / slope;
-                    if (t <= 0) {
-                        phis[i] = 100;
-                    } else if (launcherHeight + v0 * Math.cos(phis[i]) * t - g * t * t / 2 < 38.75 + 3) {
+                    double heightAtWall = launcherHeight + v0 * Math.cos(phis[i]) * t - g * t * t / 2;
+                    if (heightAtWall < 38.75 + 3) {
                         phis[i] = 100;
                     }
                 }
@@ -398,9 +470,18 @@ public class Shooter {
                 if (i == 0) {
                     thetas[tRoots.size()] = thetas[0];
                     phis[tRoots.size()] = phis[0];
-                } else if (phis[i] > phis[tRoots.size()]) {
-                    phis[tRoots.size()] = phis[i];
-                    thetas[tRoots.size()] = thetas[i];
+                } else {
+                    if (phis[i] != 100) {
+                        if (phis[tRoots.size()] != 100) {
+                            if (phis[i] > phis[tRoots.size()]) {
+                                phis[tRoots.size()] = phis[i];
+                                thetas[tRoots.size()] = thetas[i];
+                            }
+                        } else {
+                            phis[tRoots.size()] = phis[i];
+                            thetas[tRoots.size()] = thetas[i];
+                        }
+                    }
                 }
             }
 
@@ -668,6 +749,10 @@ public class Shooter {
     public void setShooter(Dist mode) {
         targetVelocity = mode.flywheelVel;
         targetHoodAngle = mode.hoodAngle;
+    }
+
+    public void setKicker(double angle){
+        kicker.setTargetAngle(angle);
     }
 
     public boolean atVel() { return Math.abs(targetVelocity - filteredVelocity) <= atVelThresh; }

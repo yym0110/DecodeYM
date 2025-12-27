@@ -112,6 +112,11 @@ public class Path {
         return new Vector2 ((velNext.x - vel.x) / 0.001, (velNext.y - vel.y) / 0.001);
     }
 
+    public Path addRepel(RepulsionPoint point){
+        this.repel.add(point);
+        return this;
+    }
+
 
     public PathData update (Pose2d robot) {
         PathSegment curr;

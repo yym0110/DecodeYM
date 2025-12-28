@@ -44,11 +44,10 @@ public class Shooter {
         TEST
     } public State state = State.IDLE;
 
-    private final Robot robot;
-    private final Sensors sensors;
-    private final DcMotorEx ms1, ms2;
-    public final PriorityMotor flywheel;
-    public final nPriorityServo turret, hood, flywheelBlocker, net, kicker;
+    private Robot robot;
+    private DcMotorEx ms1, ms2;
+    public PriorityMotor flywheel;
+    public nPriorityServo turret, hood, flywheelBlocker, net, kicker;
 
     public static ArrayList<Long> nanoTimes;
     public static ArrayList<Double> turretHistory;
@@ -93,8 +92,6 @@ public class Shooter {
     public Shooter(Robot robot) {
         this.robot = robot;
 
-        this.sensors = robot.sensors;
-
         this.ms1 = robot.hardwareMap.get(DcMotorEx.class, "shooter1");
         this.ms2 = robot.hardwareMap.get(DcMotorEx.class, "shooter2");
         flywheel = new PriorityMotor(new DcMotorEx[]{ms1, ms2},"flywheel",3, 5, new double[] {1, -1}, robot.sensors);
@@ -107,6 +104,7 @@ public class Shooter {
             2, 5
         );
 
+        /*
         kicker = new nPriorityServo(
                 new Servo[]{robot.hardwareMap.get(Servo.class, "kicker")},
                 "kicker", nPriorityServo.ServoType.AXON_MICRO,
@@ -114,6 +112,7 @@ public class Shooter {
                 new boolean[] {false},
                 2, 5
         );
+         */
 
         turret = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "turret1"), robot.hardwareMap.get(Servo.class,"turret2")},

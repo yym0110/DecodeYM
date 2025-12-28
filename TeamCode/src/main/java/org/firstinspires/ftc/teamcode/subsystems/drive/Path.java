@@ -39,7 +39,8 @@ public class Path {
     ArrayList <PathSegment> pathSegments;
     ArrayList <RepulsionPoint> repel;
     boolean reversed, completed;
-    double power, segmentIndex;
+    double power;
+    int lastReachedIndex = 0;
     Pose2d lastPose;
 
     public Path (Pose2d p, ArrayList<RepulsionPoint> repel) {
@@ -63,6 +64,11 @@ public class Path {
         return this;
     }
 
+    public Path addRepel(RepulsionPoint point){
+        this.repel.add(point);
+        return this;
+    }
+
     public Path setReversed (boolean rev) {
         if (rev != reversed) {
             lastPose.heading += Math.PI;
@@ -77,12 +83,11 @@ public class Path {
     public Vector2 getVelocity (Spline s, double tau, Vector2 robot) {
         Vector2 v_t = s.getVel(tau);
         v_t.norm();
-        Log.i("Path v_t", v_t + "");
+        // Log.i("Path v_t", v_t + "");
 
         Vector2 v_p = new Vector2(s.getPos(tau).x - robot.x, s.getPos(tau).y - robot.y);
         v_p.mul(k_p);
-        Log.i("Path v_p", v_p + "");
-
+        // Log.i("Path v_p", v_p + "");
 
         Vector2 v_rep = new Vector2(0, 0);
         for(RepulsionPoint rep : repel) {
@@ -93,7 +98,7 @@ public class Path {
 
             v_rep.add(trep);
         }
-        Log.i("Path v_rep", v_rep + "");
+        // Log.i("Path v_rep", v_rep + "");
 
         return Vector2.add(v_t, Vector2.add(v_p, v_rep));
     }
@@ -102,33 +107,34 @@ public class Path {
         Pose2d robotNext = new Pose2d(robot.x + vel.x * 0.001, robot.y + vel.y * 0.001);
         double tauNext = s.getT(robotNext);
 
-        Log.i("Path tau", tau + "");
-        Log.i("Path tauNext", tauNext + "");
+        // Log.i("Path tau", tau + "");
+        Log.i("Path robotCurr", robot + "");
+        // Log.i("Path tauNext", tauNext + "");
         Log.i("Path robotNext", robotNext + "");
 
         Vector2 velNext = getVelocity (s, tauNext, new Vector2(robotNext.x, robotNext.y));
-        Log.i("Path velNext", velNext + "");
 
         return new Vector2 ((velNext.x - vel.x) / 0.001, (velNext.y - vel.y) / 0.001);
     }
 
-    public Path addRepel(RepulsionPoint point){
-        this.repel.add(point);
-        return this;
-    }
-
-
     public PathData update (Pose2d robot) {
         PathSegment curr;
-        int index = 0;
+        int index = lastReachedIndex;
 
         while(index < pathSegments.size() && pathSegments.get(index).spline.getT(robot) == 1.0) {
             index++;
         }
 
+        lastReachedIndex = index;
+
+        for (int i = 0; i < pathSegments.size(); i++){
+            Log.i("Path Spline " + i + " tau", pathSegments.get(i).spline.getT(robot) + "");
+        }
+
+        Log.i("Path chosen index", index + "");
+
         completed = index == pathSegments.size();
         if (completed) {
-            Log.i("Path completed shoots itself and becomes null", "yes");
             return null;
         }
 

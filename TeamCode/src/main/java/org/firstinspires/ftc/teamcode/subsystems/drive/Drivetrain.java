@@ -196,8 +196,6 @@ public class Drivetrain {
                     state = State.PID_TO_POINT;
                     break;
                 }
-                Log.i("Path Completed? ", path.completed + "");
-                Log.i("Path data", (pd == null) + "");
 
                 Vector2 pathForward, pathCentripetal;
                 pathForward = pd.vel;
@@ -205,12 +203,12 @@ public class Drivetrain {
                 pathCentripetal = new Vector2(0, pathForward.mag() * pathForward.mag() / pd.r * centripetalScalar);
                 pathCentripetal.rotate(Math.atan2(pathForward.y, pathForward.x));
 
+                /*
                 Log.i("Path vel", pathForward.x + " " + pathForward.y);
                 Log.i("Path accel", pd.accel + "");
                 Log.i("Path cent", pathCentripetal.x + " " + pathCentripetal.y);
                 Log.i("Path r", pd.r + "");
-
-                pathCentripetal.mul(0);
+                 */
 
                 moveVector = Vector2.add(pathForward, pathCentripetal);
                 double mag = moveVector.mag();
@@ -224,8 +222,6 @@ public class Drivetrain {
 
                 double targetHeading = Math.atan2(pathForward.y, pathForward.x) + (pd.reversed ? Math.PI : 0);
                 turn = pathRot + turnPID.update(AngleUtil.clipAngle(targetHeading - ROBOT_POSITION.heading), -0.6, 0.6);
-
-                Log.i("Path turn", turn + "");
 
                 setMoveVector(moveVector, turn);
                 break;

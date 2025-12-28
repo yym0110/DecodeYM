@@ -24,7 +24,8 @@ public class GVFTester extends LinearOpMode{
         ArrayList<RepulsionPoint> repel = new ArrayList<>();
 
         Path testPath = new Path(new Pose2d(0, 0, 0), repel)
-                .addPoint(new Pose2d(24, 0, 0));
+                .addPoint(new Pose2d(24, 0, Math.PI / 2))
+                .addPoint(new Pose2d(48, 24, Math.PI / 2));
 
         waitForStart();
 

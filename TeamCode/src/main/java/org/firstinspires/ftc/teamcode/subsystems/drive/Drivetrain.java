@@ -224,7 +224,7 @@ public class Drivetrain {
                 turn = pathRot + turnPID.update(AngleUtil.clipAngle(targetHeading - ROBOT_POSITION.heading), -0.6, 0.6);
 
                 double distRemaining = ROBOT_POSITION.getDistanceFromPoint(path.lastPose);
-                if (distRemaining <= 6) {
+                if (path.pathSegments.get(pd.index).decel && distRemaining <= 6) {
                     moveVector.mul(Math.sqrt(distRemaining) / 6);
                 }
 

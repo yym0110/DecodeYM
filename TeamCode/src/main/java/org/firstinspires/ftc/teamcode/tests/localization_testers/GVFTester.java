@@ -22,15 +22,13 @@ public class GVFTester extends LinearOpMode{
         robot.drivetrain.setPoseEstimate(new Pose2d (0, 0, 0));
 
         ArrayList<RepulsionPoint> repel = new ArrayList<>();
-        repel.add(new RepulsionPoint(24, 60, 1));
-        repel.add(new RepulsionPoint(12, 60, 1));
-        repel.add(new RepulsionPoint(0, 60, 1));
+        repel.add(new RepulsionPoint(24, 54, 8));
+        repel.add(new RepulsionPoint(0, 54, 8));
+        repel.add(new RepulsionPoint(-24, 54, 8));
 
         Path testPath = new Path(new Pose2d(0, 0, 0), repel)
-                .addPoint(new Pose2d(24, 24, Math.PI / 2))
-                .addPoint(new Pose2d(48, 48, 0))
-                .addPoint(new Pose2d(48, 24, 0))
-                .addPoint(new Pose2d(0, 0, Math.PI));
+                .addPoint(new Pose2d(0, 48, 0))
+                .setDecel(true);
 
         waitForStart();
 

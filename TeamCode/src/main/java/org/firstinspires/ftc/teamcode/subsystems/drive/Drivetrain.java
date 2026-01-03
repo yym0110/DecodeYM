@@ -234,8 +234,8 @@ public class Drivetrain {
                 turn = pathRot + turnPID.update(AngleUtil.clipAngle(targetHeading - ROBOT_POSITION.heading), -0.6, 0.6);
 
                 double distRemaining = ROBOT_POSITION.getDistanceFromPoint(path.lastPose);
-                if (path.pathSegments.get(pd.index).decel && distRemaining <= 6) {
-                    moveVector.mul(0.8 * Math.sqrt(distRemaining/6) + 0.2);
+                if (path.pathSegments.get(pd.index).decel && distRemaining <= 12) {
+                    moveVector.mul(0.8 * Math.sqrt(distRemaining / 12) + 0.2);
                 }
 
                 setMoveVector(moveVector, turn);
@@ -391,8 +391,12 @@ public class Drivetrain {
 
             double n = 100;
             double step = 1/n;
-            for(double t = 0; t < 1; t = t + step){
+            for (double t = 0; t < 1; t = t + step) {
                 canvas.strokeLine(s.getPos(t).x, s.getPos(t).y, s.getPos(t + step).x, s.getPos(t + step).y);
+            }
+
+            for (RepulsionPoint repel : path.repel) {
+                canvas.fillCircle(repel.x, repel.y, 0.5);
             }
         }
     }

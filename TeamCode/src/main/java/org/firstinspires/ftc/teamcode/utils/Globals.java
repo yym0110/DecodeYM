@@ -32,7 +32,7 @@ public class Globals {
         ArrayList<RepulsionPoint> rp = new ArrayList<>();
 
         for (int i = 72; i >= -72; i -= 4) {
-            rp.add(new RepulsionPoint(i, 0, 4));
+            rp.add(new RepulsionPoint(i, 0, 6));
         }
 
         // Prevent slamming into the gate too hard (58 on y axis)

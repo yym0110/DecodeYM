@@ -46,9 +46,9 @@ public class Shooter {
 
     private boolean aimRequest = false, shootRequest = false, stopRequest = false, indexRequest = false;
 
-    public static PID turretPID = new PID (0.4, 0.3, 0.008);
+    public static PID turretPID = new PID (0.6, 0.4, 0.008);
     public static double turretMinPow = 0.2;
-    public static double turretIntegralThresh = Math.toRadians(20);
+    public static double turretIntegralThresh = 0.17;
 
     // velocity is in inches / second
     public static PID velocityPID = new PID (0.0, 0.0002, 0.0001);
@@ -145,6 +145,36 @@ public class Shooter {
     // should be able to cancel into stop -> idle anytime
     // should be able to cancel into aim req or index req within accel
     public void update() {
+        // Flywheel Velocity PIDF
+        double actualVelocity = robot.sensors.getFlywheelVelocity();
+        if (Math.abs(actualVelocity - filteredVelocity) <= velocityFilterThresh) {
+            filteredVelocity = filteredVelocity * (1 - velocityFilterLow) + actualVelocity * velocityFilterLow;
+        } else {
+            filteredVelocity = filteredVelocity * (1 - velocityFilterHigh) + actualVelocity * velocityFilterHigh;
+        }
+        double error = targetVelocity - filteredVelocity;
+        if (targetVelocity <= 1 || error > velocityFilterThresh) velocityPID.resetIntegral();
+        else velocityPID.clipIntegral(-1, 1);
+        double pidpow = velocityPID.update(error, -1.0, 1.0);
+        double ffpow = targetVelocity * velocityFFm + velocityFFb;
+        double pow = Math.max(0, pidpow + ffpow);
+        if (error > velocityHighPowerThresh) pow = 1;
+        if (filteredVelocity < velocityNoSkipThresh) {
+            pow = Math.min(pow, prevPow + velocityNoSkipAccel * robot.sensors.loopTime);
+        }
+        flywheel.setTargetPower(pow);
+        prevPow = pow;
+
+        // Turret PIDF
+        targetTurretAngle = Sensors.turretAngleClip(targetTurretAngle);
+        double turretError = targetTurretAngle - Sensors.turretAngleClip(robot.sensors.getTurretAngle());
+        if (Math.abs(turretError) <= turretIntegralThresh) turretPID.resetIntegral();
+        else turretPID.clipIntegral(-1, 1);
+        double turretPow = turretPID.update(turretError, -1, 1) + turretMinPow * Math.signum(turretError);
+        if (Math.abs(turretError) < Math.toRadians(4)) turretPow = 0;
+        else if (P != null && P.x * P.x + P.y * P.y <= 1296 && Math.abs(turretError) < Math.toRadians(10)) turretPow = 0;
+        turret.setTargetPower(turretPow);
+
         switch (state) {
             case IDLE:
                 stopRequest = false;
@@ -185,11 +215,13 @@ public class Shooter {
                 aimRequest = false;
 
                 setShooterBlocker(true);
-                if (aimLauncherV8() && hood.inPosition() && Math.abs(targetTurretAngle - Sensors.turretAngleClip(robot.sensors.getTurretAngle())) <= Math.toRadians(4 * (P.x * P.x + P.y * P.y <= 1296 ? 2.5 : 1))) {
-                    state = State.READY;
-                }
+                aimLauncherV8();
                 setTargetVelocity(minFlywheelVelocity);
                 setHoodAngle(targetHoodAngle);
+
+                if (Math.abs(error) <= 10 && hood.inPosition() && Math.abs(targetTurretAngle - Sensors.turretAngleClip(robot.sensors.getTurretAngle())) <= Math.toRadians(4 * (P.x * P.x + P.y * P.y <= 1296 ? 3.5 : 2))) {
+                    state = State.READY;
+                }
 
                 if (stopRequest) {
                     stopRequest = false;
@@ -255,43 +287,14 @@ public class Shooter {
                 break;
         }
 
-        // Flywheel Velocity PIDF
-        double actualVelocity = robot.sensors.getFlywheelVelocity();
-        if (Math.abs(actualVelocity - filteredVelocity) <= velocityFilterThresh) {
-            filteredVelocity = filteredVelocity * (1 - velocityFilterLow) + actualVelocity * velocityFilterLow;
-        } else {
-            filteredVelocity = filteredVelocity * (1 - velocityFilterHigh) + actualVelocity * velocityFilterHigh;
-        }
-        double error = targetVelocity - filteredVelocity;
-        if (targetVelocity <= 1 || error > velocityFilterThresh) velocityPID.resetIntegral();
-        else velocityPID.clipIntegral(-1, 1);
-        double pidpow = velocityPID.update(error, -1.0, 1.0);
-        double ffpow = targetVelocity * velocityFFm + velocityFFb;
-        double pow = Math.max(0, pidpow + ffpow);
-        if (error > velocityHighPowerThresh) pow = 1;
-        if (filteredVelocity < velocityNoSkipThresh) {
-            pow = Math.min(pow, prevPow + velocityNoSkipAccel * robot.sensors.loopTime);
-        }
-        flywheel.setTargetPower(pow);
-        prevPow = pow;
-
-        // Turret PIDF
-        targetTurretAngle = Sensors.turretAngleClip(targetTurretAngle);
-        double turretError = targetTurretAngle - Sensors.turretAngleClip(robot.sensors.getTurretAngle());
-        if (Math.abs(turretError) <= turretIntegralThresh) turretPID.resetIntegral();
-        else turretPID.clipIntegral(-1, 1);
-        double turretPow = turretPID.update(turretError, -1, 1) + turretMinPow * Math.signum(turretError);
-        if (Math.abs(turretError) < Math.toRadians(4)) turretPow = 0;
-        else if (P != null && P.x * P.x + P.y * P.y <= 1296 && Math.abs(turretError) < Math.toRadians(10)) turretPow = 0;
-        turret.setTargetPower(turretPow);
-
         TelemetryUtil.packet.put("Shooter : state", this.state);
         TelemetryUtil.packet.put("Shooter : Flywheel Power Applied", pow * 100);
         TelemetryUtil.packet.put("Shooter : Flywheel Target Velocity", targetVelocity);
         TelemetryUtil.packet.put("Shooter : Flywheel Filtered Velocity", filteredVelocity);
         TelemetryUtil.packet.put("Shooter : Turret Target", Math.toDegrees(targetTurretAngle));
-        TelemetryUtil.packet.put("Shooter : Hood Target (deg)", Math.toDegrees(hood.getTargetAngle()));
         TelemetryUtil.packet.put("Shooter : Turret Power PID", turretPow * 100);
+        TelemetryUtil.packet.put("Shooter : Hood in position", hood.inPosition(0.01));
+        TelemetryUtil.packet.put("Shooter : suspicous behavior", Math.abs(targetTurretAngle - Sensors.turretAngleClip(robot.sensors.getTurretAngle())) <= Math.toRadians(4 * (P != null && P.x * P.x + P.y * P.y <= 1296 ? 3.5 : 2)));
         LogUtil.flywheelTarget.set(targetVelocity);
         LogUtil.shooterState.set(this.state.toString());
         LogUtil.turretTarget.set(targetTurretAngle);

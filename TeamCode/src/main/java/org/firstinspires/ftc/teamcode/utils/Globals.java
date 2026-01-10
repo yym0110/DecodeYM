@@ -2,6 +2,11 @@ package org.firstinspires.ftc.teamcode.utils;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.teamcode.subsystems.drive.RepulsionPoint;
+
+import java.sql.Array;
+import java.util.ArrayList;
+
 @Config
 public class Globals {
     // general
@@ -22,6 +27,19 @@ public class Globals {
     public static Pose2d ROBOT_POSITION = new Pose2d(0,0,0);
     public static Pose2d ROBOT_VELOCITY = new Pose2d(0,0,0);
     public static Pose2d AUTO_ENDING_POSE = new Pose2d(0,0,0);
+
+    public static ArrayList<RepulsionPoint> getMidline() {
+        ArrayList<RepulsionPoint> rp = new ArrayList<>();
+
+        for (int i = 72; i >= -72; i -= 4) {
+            rp.add(new RepulsionPoint(i, 0, 4));
+
+        // Prevent slamming into the gate too hard (58 on y axis)
+        rp.add(new RepulsionPoint(0, (isRed ? 1 : -1) * 60, 2.5));
+
+        return rp;
+    }
+
 
     // loop time methods
     public static void START_LOOP() {

@@ -82,12 +82,12 @@ public class Shooter {
     public double a = g * g / 4, c, d, e;
     public double v0, cv0;
     public double minV0 = 0.0, minFlywheelVelocity = 0.0;
-    public double minV0Superthresh = 0.0; // TODO: need to tune this, controls how much over minV0 we make the v0 strive for pre mult
+    public double minV0Superthresh = 0.01; // TODO: need to tune this, controls how much over minV0 we make the v0 strive for pre mult
     public double minV0factor = 1.07;
     public static double minV0factorClose = 1.13; // TODO: tune for triple shot
-    public static double minV0factorFar = 1.11; // TODO: tune for triple shot
+    public static double minV0factorFar = 1.09; // TODO: tune for triple shot
     public static double flywheelEfficiency = 0.92;
-    public static double flywheelEfficiencyConstantFarAddition = -0.04;
+    public static double flywheelEfficiencyConstantFarAddition = -0.03;
     public double targetTurretAngle = 0.0;
     public double targetHoodAngle = 0.0;
     public static double hoodSweep = Math.toRadians(34.0);
@@ -172,7 +172,7 @@ public class Shooter {
                 setShooterBlocker(true);
                 TelemetryUtil.packet.put("Aim: aimLauncherV8", "before");
                 boolean aimResult = aimLauncherV8();
-                boolean turretResult = Math.abs(targetTurretAngle - robot.sensors.getTurretAngle()) <= Math.toRadians(ROBOT_POSITION.x >= 24 ? 8 : 2);
+                boolean turretResult = Math.abs(targetTurretAngle - robot.sensors.getTurretAngle()) <= Math.toRadians(ROBOT_POSITION.x >= 24 ? 8 : 1.5);
                 TelemetryUtil.packet.put("Aim: aimResult", aimResult);
                 TelemetryUtil.packet.put("Aim: turretResult", turretResult);
                 if (aimResult && hood.inPosition() && turretResult) {
@@ -272,7 +272,10 @@ public class Shooter {
         if (Math.abs(turretError) < Math.toRadians(2)) turretPow = 0; // turretMinPow * turretError / Math.toRadians(2)
         else if (P != null && P.x * P.x + P.y * P.y <= 1296 && Math.abs(turretError) < Math.toRadians(10)) turretPow = 0;
         turret.setTargetPower(turretPow);
-
+        if(this.V != null){
+            Log.i("Shooter","Robot Velocity" + this.V.getMag());
+            TelemetryUtil.packet.put("Robot Velocity", (this.V).getMag());
+        }
         TelemetryUtil.packet.put("Shooter : state", this.state);
         TelemetryUtil.packet.put("Shooter : Flywheel Power Applied", pow * 100);
         TelemetryUtil.packet.put("Shooter : Flywheel Target Velocity", targetVelocity);
@@ -365,6 +368,7 @@ public class Shooter {
         turretTrackTarget();
         Vector3 V = new Vector3(-ROBOT_VELOCITY.x, -ROBOT_VELOCITY.y, 0);
         V.subtract(Vector3.cross(new Vector3(0, 0, currHeadingVel), new Vector3(dLauncher * Math.cos(currHeadingPos), dLauncher * Math.sin(currHeadingPos), 0)));
+        this.V = V;
         Log.i("Points", "Set target turret angle & Starting MinV0");
 
         double a = g * g / 4;

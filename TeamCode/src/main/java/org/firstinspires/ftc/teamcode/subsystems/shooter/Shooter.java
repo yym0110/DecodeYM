@@ -49,7 +49,7 @@ public class Shooter {
 
     private boolean aimRequest = false, shootRequest = false, stopRequest = false;
 
-    public static PID turretPID = new PID (0.2, 0.0, 0.02);
+    public static PID turretPID = new PID (0.4, 0.0, 0.02);
     public static double turretMinPow = 0.05;
 
     // velocity is in inches / second
@@ -283,7 +283,6 @@ public class Shooter {
         double turretError = targetTurretAngle - Sensors.turretAngleClip(robot.sensors.getTurretAngle());
         double turretPow = turretPID.update(turretError, -1, 1) + turretMinPow * Math.signum(turretError);
         if (Math.abs(turretError) < Math.toRadians(2)) turretPow = 0; // turretMinPow * turretError / Math.toRadians(2)
-        else if (P != null && P.x * P.x + P.y * P.y <= 1296 && Math.abs(turretError) < Math.toRadians(10)) turretPow = 0;
         turret.setTargetPower(turretPow);
         if (this.V != null) {
             Log.i("Shooter","Robot Velocity" + this.V.getMag());

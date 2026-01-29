@@ -60,7 +60,7 @@ public class RedGoalPreloadAuto extends LinearOpMode {
         robot.drivetrain.goToPoint(new Pose2d(-28, 28, heading), 1.0);
         robot.waitWhile(() -> {
             robot.shooter.turretTrackTarget();
-            return robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel();
+            return robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel() || Math.abs(robot.shooter.targetTurretAngle - robot.sensors.getTurretAngle()) > 10;
         });
 
         robot.shooter.setShooterBlocker(false);

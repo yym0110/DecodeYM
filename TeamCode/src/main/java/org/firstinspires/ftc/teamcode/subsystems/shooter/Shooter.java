@@ -47,10 +47,10 @@ public class Shooter {
 
     private boolean aimRequest = false, shootRequest = false, stopRequest = false;
 
-    public static PID turretPID = new PID (0.25, 0.0, 0.003);
+    public static PID turretPID = new PID (0.32, 0.0, 0.12);
     public static double turretKStatic = 0.11;
-    public static double turretDeadzone = 1.5;
-    public static double turretVelFactor = 0.5;
+    public static double turretDeadzone = 2;
+    public static double turretVelFactor = 0.2;
     private double lastTurretTarget = 0.0;
     public double targetTurretAngle = 0.0;
     private double targetTurretAngleVel = 0.0;
@@ -93,13 +93,13 @@ public class Shooter {
     public static double minV0factorClose = 1.13; // TODO: tune for triple shot
     public static double voltageV0factor = 12.3;
     public static double ballInterpolateYFar = 63;
-    public static double ballInterpolateZFar = 46;
-    public static double ballInterpolateZCloseB = 46;
+    public static double ballInterpolateZFar = 44;
+    public static double ballInterpolateZCloseB = 45;
     public static double ballInterpolateYCloseB = 69.5;
     public static double ballInterpolateZCloseS = 38.75;
     public static double ballInterpolateYCloseS = 60;
     public static double minV0factorFar = 1.13  ; // TODO: tune for triple shot
-    public static double flywheelEfficiency = 0.92;
+    public static double flywheelEfficiency = 0.97;
     public static double flywheelEfficiencyConstantFarAddition = -0.03;
     private Pose2d lastPos, currVel, lastVel;
     public static double posFilter = 0.9;
@@ -273,6 +273,7 @@ public class Shooter {
         lastTurretTarget = targetTurretAngle;
         double turretAngle = robot.sensors.getTurretAngle();
         double turretError = targetTurretAngle - Sensors.turretAngleClip(turretAngle);
+        if(turretError > 60) {turretPID.updatePID(0.6,0,0);} else {turretPID.updatePID(0.32,0,0.12);}
         double turretPow = turretPID.update(turretError, -1, 1) + turretKStatic * Math.signum(turretError);
         if (Math.abs(turretError) < Math.toRadians(turretDeadzone)) turretPow = 0;
         turretPow += targetTurretAngleVel / (turret.servoType.speed) * turretVelFactor; // meant to account for robot rotating
@@ -355,7 +356,7 @@ public class Shooter {
         updateBallTargetInterpolate();
         Vector3 P;
         if (ROBOT_POSITION.x + 12 >= ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) P = new Vector3(ballTarget);
-        else P = new Vector3(ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.x * (Globals.isRed ? -1 : 1), ballTarget.z); // invert target along y = x or y = -x
+        else P = new Vector3(ballTarget.x, ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.z); // invert target along y = x or y = -x
         P.subtract(new Vector3(ROBOT_POSITION.x, ROBOT_POSITION.y, launcherHeight));
         this.P = P;
         targetTurretAngle = AngleUtil.clipAngle(Math.atan2(P.getY(), P.getX()) - ROBOT_POSITION.heading);

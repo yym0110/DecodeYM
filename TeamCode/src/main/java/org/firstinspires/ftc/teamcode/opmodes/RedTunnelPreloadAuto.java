@@ -18,6 +18,8 @@ import org.firstinspires.ftc.teamcode.utils.RunMode;
 @Autonomous(name = "RedTunnelPreloadAuto", group = "Auto")
 public class RedTunnelPreloadAuto extends LinearOpMode {
     private Robot robot;
+    long delay;
+    private final long shootDuration = 2000;
     private double timer = System.currentTimeMillis();
 
     public static double heading = 2.71;
@@ -29,7 +31,7 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
         robot.setStopChecker(this::isStopRequested);
         robot.drivetrain.setPoseEstimate(new Pose2d(72 - ROBOT_BACK_LENGTH, ROBOT_WIDTH / 2, Math.PI));
 
-        robot.shooter.state = Shooter.State.TEST;
+        robot.shooter.state = Shooter.State.IDLE;
         robot.shooter.setShooterBlocker(true);
 
         while (opModeInInit()) {
@@ -41,7 +43,7 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
         if (!isStopRequested()) LogUtil.init();
         LogUtil.drivePositionReset = true;
 
-        robot.shooter.setShooter(Shooter.Dist.FAR);
+        //robot.shooter.setShooter(Shooter.Dist.FAR);
         shoot(heading);
         intake(36, 56);
         shoot(heading);
@@ -49,7 +51,7 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
         shoot(heading);
         intake(-12 , 50);
         shoot(heading);
-        robot.shooter.setShooter(Shooter.Dist.OFF);
+        //robot.shooter.setShooter(Shooter.Dist.OFF);
         robot.shooter.targetTurretAngle = 0.0;
         robot.drivetrain.goToPoint(new Pose2d(0, 45, Math.PI), 1.0);
 
@@ -61,23 +63,28 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
     }
 
     private void shoot(double heading) {
+
         robot.drivetrain.goToPoint(new Pose2d(50, 15, heading), 1.0);
+        robot.shooter.reqAim(true);
+
         robot.waitWhile(() -> {
-            robot.shooter.turretTrackTarget();
-            return robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel() || Math.abs(robot.shooter.targetTurretAngle - robot.sensors.getTurretAngle()) > 2;
+
+            return robot.drivetrain.state != Drivetrain.State.WAIT || robot.shooter.state != Shooter.State.READY ||Math.abs(robot.shooter.targetTurretAngle - robot.sensors.getTurretAngle()) > 3;
         });
 
-        robot.shooter.setShooterBlocker(false);
-        timer = System.currentTimeMillis();
-        robot.intake.reqShoot(true);
-        robot.waitWhile(() -> {
-            robot.shooter.turretTrackTarget();
-            return System.currentTimeMillis() - timer <= 800;
-        });
 
-        robot.shooter.setShooterBlocker(true);
-        robot.intake.reqOff(true);
+
+        robot.shooter.reqShoot(true);
+        delay = System.currentTimeMillis();
+        robot.update();
+        robot.waitWhile(() -> (System.currentTimeMillis() - delay) < shootDuration);
+
+        robot.shooter.reqStop(true);
+        robot.update();
     }
+
+
+
 
     private void intake(double x, double y) {
         robot.drivetrain.goToPoint(new Pose2d(x, 22, Math.toRadians(90)), 1.0);

@@ -14,13 +14,13 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
+
 @Config
 @Autonomous(name = "RedTunnelPreloadAuto", group = "Auto")
 public class RedTunnelPreloadAuto extends LinearOpMode {
     private Robot robot;
-    long delay;
-    private final long shootDuration = 1200;
-    private double timer = System.currentTimeMillis();
+    public static long shootDuration = 1200;
+    private long timer = System.currentTimeMillis();
 
     public static double heading = 2.71;
 
@@ -63,7 +63,6 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
     }
 
     private void shoot(double heading) {
-
         robot.drivetrain.goToPoint(new Pose2d(53, 12, heading), 1.0);
         //robot.shooter.reqAim(true);
 
@@ -71,8 +70,6 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
             robot.shooter.turretTrackTarget();
             return robot.drivetrain.state != Drivetrain.State.WAIT || !robot.shooter.atVel() || Math.abs(robot.shooter.targetTurretAngle - robot.sensors.getTurretAngle()) > 3;
         });
-
-
 
         robot.shooter.setShooterBlocker(false);
         timer = System.currentTimeMillis();
@@ -85,9 +82,6 @@ public class RedTunnelPreloadAuto extends LinearOpMode {
         robot.shooter.setShooterBlocker(true);
         robot.intake.reqOff(true);
     }
-
-
-
 
     private void intake(double x, double y) {
         robot.drivetrain.goToPoint(new Pose2d(x, 22, Math.toRadians(90)), 1.0);

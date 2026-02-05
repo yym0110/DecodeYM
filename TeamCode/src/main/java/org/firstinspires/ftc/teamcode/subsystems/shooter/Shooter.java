@@ -47,12 +47,12 @@ public class Shooter {
 
     private boolean aimRequest = false, shootRequest = false, stopRequest = false;
 
-    public static PID turretPID = new PID (0.25, 0.0, 0.08);
-    public static double turretKStatic = 0.11;
-    public static double turretKStaticLeft = 0.06;
-    public static double turretKStaticRight = -0.12;
+    public static PID turretPID = new PID (0.25, 0.0, 0.05);
+    public static double turretKStatic = 0.08;
+    public static double turretKStaticLeft = 0.08;
+    public static double turretKStaticRight = -0.8;
     public static double turretDeadzone = 2;
-    public static double turretVelFactor = 0.2;
+    public static double turretVelFactor = 0.25;
     private double lastTurretTarget = 0.0;
     public double targetTurretAngle = 0.0;
     private double targetTurretAngleVel = 0.0;
@@ -99,8 +99,16 @@ public class Shooter {
     public static double flywheelEfficiencyConstantFarAddition = -0.02;
     private Pose2d lastPos, currVel, lastVel;
     public static double posFilter = 0.9;
-    private final double wallM = 17.25 / 23.75 * 0.5;
-    private final double wallB = wallM * 23.75 * 3 + 23.75 * 2;
+
+    /*
+    (-71, 48)
+    (-48, 64)
+    m = (y2 - y1) / (x2 - x1)
+    y - y1 = m (x - x1)
+    y = m x - m x1 + y1
+    */
+    private final double wallM = (48.0 - 64.0) / (-71.0 - -48.0);
+    private final double wallB = 48 - wallM * -71;
 
     public Shooter(Robot robot) {
         this.robot = robot;
@@ -141,7 +149,7 @@ public class Shooter {
 
     public void update() {
         switch (state) {
-            case IDLE:
+            case IDLE: {
                 stopRequest = false;
 
                 turretTrackTarget();
@@ -154,7 +162,8 @@ public class Shooter {
                     state = State.AIMING;
                 }
                 break;
-            case AIMING:
+            }
+            case AIMING: {
                 aimRequest = false;
 
                 setShooterBlocker(true);
@@ -176,16 +185,21 @@ public class Shooter {
                     state = State.IDLE;
                 }
                 break;
-            case READY:
+            }
+            case READY: {
                 setShooterBlocker(true);
 
-                if (aimLauncherV8()) {
+                TelemetryUtil.packet.put("Aim: aimLauncherV8", "before");
+                boolean aimResult = aimLauncherV8();
+                boolean turretResult = Math.abs(targetTurretAngle - robot.sensors.getTurretAngle()) <= Math.toRadians(ROBOT_POSITION.x >= 24 ? 4 : 1.5);
+                TelemetryUtil.packet.put("Aim: aimResult", aimResult);
+                TelemetryUtil.packet.put("Aim: turretResult", turretResult);
+                if (aimResult) {
                     robot.sensors.light0G.setState(false);
                     robot.sensors.light0P.setState(false);
                 }
                 setTargetVelocity(minFlywheelVelocity);
                 setHoodAngle(targetHoodAngle);
-                turretResult = Math.abs(targetTurretAngle - robot.sensors.getTurretAngle()) <= Math.toRadians(ROBOT_POSITION.x >= 24 ? 3 : 1.5);
                 if (shootRequest && turretResult) {
                     setShooterBlocker(false);
                     if (flywheelBlocker.inPosition()) {
@@ -203,7 +217,8 @@ public class Shooter {
                     robot.intake.reqOff(true);
                 }
                 break;
-            case SHOOT:
+            }
+            case SHOOT: {
                 shootRequest = false;
 
                 setShooterBlocker(false);
@@ -220,8 +235,10 @@ public class Shooter {
                     robot.intake.reqOff(true);
                 }
                 break;
-            case TEST: // LEAVE THIS EMPTY AT ALL TIMES
+            }
+            case TEST: { // LEAVE THIS EMPTY AT ALL TIMES
                 break;
+            }
         }
 
         // Filtering velocity
@@ -269,12 +286,12 @@ public class Shooter {
         lastTurretTarget = targetTurretAngle;
         double turretAngle = robot.sensors.getTurretAngle();
         double turretError = targetTurretAngle - Sensors.turretAngleClip(turretAngle);
-        if(Math.abs(turretError) > 60) {turretPID.updatePID(0.6,0,0);} else {turretPID.updatePID(0.25,0,0.08);}
         double turretPow = turretPID.update(turretError, -1, 1);
         if (turretError > 0) turretPow += turretKStaticLeft;
         else if (turretError < 0) turretPow += turretKStaticRight;
         if (Math.abs(turretError) < Math.toRadians(turretDeadzone)) turretPow = 0;
         turretPow += targetTurretAngleVel / (turret.servoType.speed) * turretVelFactor; // meant to account for robot rotating
+        if (Math.abs(turretError) > Math.toRadians(60)) turretPow = Math.signum(turretError);
         if (turretAngle >= Sensors.turretLimitLeft) turretPow = Math.min(turretPow, -turretKStatic);
         if (turretAngle <= Sensors.turretLimitRight) turretPow = Math.max(turretPow, turretKStatic);
         turretPow = Utils.minMaxClip(turretPow, -1, 1);
@@ -354,7 +371,7 @@ public class Shooter {
         // for +-180 turret
         updateBallTargetInterpolate();
         Vector3 P;
-        if (ROBOT_POSITION.x + 12 >= ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) P = new Vector3(ballTarget);
+        if (ROBOT_POSITION.x + 24 >= ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) P = new Vector3(ballTarget);
         else P = new Vector3(ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.x * (Globals.isRed ? -1 : 1), ballTarget.z); // invert target along y = x or y = -x
         P.subtract(new Vector3(ROBOT_POSITION.x, ROBOT_POSITION.y, launcherHeight));
         this.P = P;
@@ -410,6 +427,8 @@ public class Shooter {
         double v0 = getBallExitSpd();
         Log.i("Points", "Got past MinV0, v0 = " + v0);
 
+        Canvas canvas = TelemetryUtil.packet.fieldOverlay();
+
         double[] thetas;
         double[] phis;
         if (v0 > 120)  {
@@ -434,7 +453,7 @@ public class Shooter {
                 roots.append(tRoots.get(i));
                 if (i != tRoots.size() - 1) roots.append(", ");
             }
-            Log.i("Dynamic", "Roots: [" + roots.toString() + "]");
+            Log.i("Dynamic", "Roots: " + roots.toString() + "]");
             phis = new double[tRoots.size() + 1];
             thetas = new double[phis.length];
             for (int i = 0; i < tRoots.size(); i++) {
@@ -449,6 +468,10 @@ public class Shooter {
                 int flip = Globals.isRed ? 1 : -1;
                 double yAtWall = wallM * flip * (ROBOT_POSITION.y - P.y * ROBOT_POSITION.x / P.x) - P.y / P.x * wallB * flip;
                 yAtWall /= wallM * flip - P.y / P.x;
+
+                canvas.setStroke("#808080");
+                canvas.strokeLine(-72 + i * 12, yAtWall, -60 + i * 12, yAtWall);
+
                 double t = (yAtWall - ROBOT_POSITION.y) / (v0 * Math.sin(phis[i]) * Math.sin(thetas[i]) + V.y);
                 Log.i("Dynamic", "Point  : i = " + i + ", t = " + t + ", yAtWall = " + yAtWall);
                 if (t <= 0) {

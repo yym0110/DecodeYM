@@ -52,6 +52,7 @@ public class LogUtil {
     //public static Datalogger.GenericField driveTargetY = new Datalogger.GenericField("driveTargetY");
     //public static Datalogger.GenericField driveTargetAngle = new Datalogger.GenericField("driveTargetAngle");
     public static Datalogger.GenericField drivePath = new Datalogger.GenericField("drivePath");
+    public static Datalogger.GenericField event = new Datalogger.GenericField("event");
     public static Datalogger.GenericField parkState = new Datalogger.GenericField("parkState");
     public static Datalogger.GenericField parkAngle = new Datalogger.GenericField("parkAngle");
 
@@ -100,7 +101,8 @@ public class LogUtil {
                 driveCurrentY,
                 driveCurrentAngle,
                 drivePath,
-                driveState
+                driveState,
+                event
             )
             .build();
     }

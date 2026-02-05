@@ -9,8 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.utils.ButtonToggle;
 import org.firstinspires.ftc.teamcode.utils.Globals;
@@ -18,7 +16,6 @@ import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
-import org.firstinspires.ftc.teamcode.vision.Vision;
 
 import java.util.Locale;
 
@@ -50,8 +47,8 @@ public class Teleop extends LinearOpMode {
         ButtonToggle x2 = new ButtonToggle();
         ButtonToggle y2 = new ButtonToggle();
         ButtonToggle back2 = new ButtonToggle();
-        ButtonToggle lb2 = new ButtonToggle();
-        ButtonToggle rb2 = new ButtonToggle();
+        ButtonToggle down2 = new ButtonToggle();
+        ButtonToggle up2 = new ButtonToggle();
         ButtonToggle lsb2 = new ButtonToggle();
         ButtonToggle rsb2 = new ButtonToggle();
 
@@ -193,8 +190,9 @@ public class Teleop extends LinearOpMode {
                 robot.drivetrain.setPoseEstimate(new Pose2d(71 - 6.2, (ROBOT_POSITION.y > 0 ? 1 : -1) * (71 - 6.5), Math.PI));
             }
 
-            if (rb2.isClicked(gamepad2.right_bumper));
-            if (lb2.isClicked(gamepad2.left_bumper));
+            if (up2.isClicked(gamepad2.dpad_up)) LogUtil.event.set("ballMiss");
+            else if (down2.isClicked(gamepad2.dpad_down)) LogUtil.event.set("ballHit");
+            else LogUtil.event.set("");
 
             robot.drivetrain.drive(gamepad1);
 

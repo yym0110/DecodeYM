@@ -6,13 +6,35 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class RelativeEncoder {
     //private String name;
     public final AnalogInput encoder;
+
+    private final double zeroOffset;
     private double currentAngle;
     private double prevAngle = 0;
     private double angleTraveled = 0;
 
+
+    public RelativeEncoder(HardwareMap hardwareMap, String name, double offset) {
+        encoder = hardwareMap.get(AnalogInput.class, name);
+
+        zeroOffset = offset;
+
+        currentAngle = Utils.headingClip(
+                normalizeVoltage(encoder.getVoltage()) - zeroOffset
+        );
+
+        prevAngle = currentAngle;
+    }
+
     public RelativeEncoder(HardwareMap hardwareMap, String name) {
         encoder = hardwareMap.get(AnalogInput.class, name);
-        prevAngle = currentAngle = normalizeVoltage(encoder.getVoltage());
+
+        zeroOffset = 0;
+
+        currentAngle = Utils.headingClip(
+                normalizeVoltage(encoder.getVoltage()) - zeroOffset
+        );
+
+        prevAngle = currentAngle;
     }
 
     /**
@@ -25,9 +47,11 @@ public class RelativeEncoder {
     }
 
     public void update() {
-        prevAngle = currentAngle;
-        currentAngle = normalizeVoltage(encoder.getVoltage());
+
+        currentAngle = Utils.headingClip(normalizeVoltage(encoder.getVoltage()) - zeroOffset);
+
         angleTraveled += Utils.headingClip(currentAngle - prevAngle);
+
         prevAngle = currentAngle;
     }
 

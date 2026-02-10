@@ -169,8 +169,8 @@ public class Sensors {
      */
     public double getTurretAngle() { return turretAngle; }
 
-    //angle that the park servo has traveled, not the bellypan
-    public double getParkAngleTraveled() { return parkEncoder.getAngleTraveled(); }
+    //position of the park slides
+    public double getParkPos() { return parkEncoder.getAngleTraveled(); }
 
     private void updateTelemetry() {
         TelemetryUtil.packet.put("Voltage", voltage);

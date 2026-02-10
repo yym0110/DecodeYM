@@ -20,7 +20,6 @@ public class ParkTester extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         Park park = new Park(robot);
         park.state = Park.State.IDLE;
-        targetAngle = 0;
 
         while (opModeInInit()) {
             robot.update();
@@ -29,15 +28,8 @@ public class ParkTester extends LinearOpMode {
 
         while (!isStopRequested()) {
             if (gamepad1.x) park.state = Park.State.IDLE;
-            if (gamepad1.y) park.state = Park.State.MANUAL_CONTROL;
-            if (park.state == Park.State.MANUAL_CONTROL) {
-                if (gamepad2.a) targetAngle += 0.1;
-                if (gamepad2.b) targetAngle -= 0.1;
-                park.setTargetAngle(targetAngle);
-            } else {
-                if (gamepad1.a) park.moveNextState();
-                if (gamepad1.b) park.movePreviousState();
-            }
+            if (gamepad1.y) park.state = Park.State.EXTEND;
+
 
             robot.update();
             park.update();

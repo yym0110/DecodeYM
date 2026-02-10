@@ -1,35 +1,46 @@
 package org.firstinspires.ftc.teamcode.subsystems.park;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
+import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityCRServo;
 
+
+@Config
 public class Park {
     private final Robot robot;
 
-    private final PriorityCRServo pivot;
-
-    //every turn of the servo leads to the bellypan spinning gear_ratio times
-    private static final double gear_ratio = 36.0 / (4.0 * 40.0);
+    private final PriorityCRServo park;
 
     //bellypan positions
     //horizontal is 0
-    private double target_angle = 0;
-    private double angle = 0;
+    public static double target_pos = 0;//target position and position can be thought of as height of slides if the robot was flipped upside down
+    public static double pos = 0;
 
-    private final double threshold = 0.1; // idk tune
-    public static PID bellypanPID = new PID (0.01, 0.0, 0.0);
+    //positive power corresponds to pushing the robot up/pushing the slides down
+    public static double threshold = 0.3;
+    public static PID parkPID = new PID (0.01, 0.0, 0.0);
+
+    public static double forcePullInPower = -0.2;
+    public static double stayUpPower = 0.2;
+
+    public static double kstatic = 0.2;
+
+    public static double maxLength = 17; //?
+
 
     public enum State {
         IDLE,
-        STAGE_1,
-        STAGE_2,
-        WAIT,
+        PULL_IN,
+        EXTEND,
+        WAIT_AT_TOP,
         MANUAL_CONTROL
     }
 
@@ -41,86 +52,66 @@ public class Park {
     public Park(Robot robot) {
         this.robot = robot;
 
-        pivot = new PriorityCRServo(
+        park = new PriorityCRServo(
             new CRServo[]{robot.hardwareMap.get(CRServo.class, "park1"), robot.hardwareMap.get(CRServo.class,"park2")},
             "park", PriorityCRServo.ServoType.AXON_MAX,
             new boolean[]{false, true},
             2, 5
         );
 
-        robot.hardwareQueue.addDevice(pivot);
+        robot.hardwareQueue.addDevice(park);
     }
 
     public void update() {
-        //two stages of park
-        //stage 1 is we tilt the servos to a certain position(maybe 90 degrees)
-        //stage 2 is we tilt the opposite direction
-
-        angle = getBellypanAngle();
 
         switch (state) {
             case IDLE: {
-                setTargetAngle(0);
-                if (nextState) {
-                    state = State.STAGE_1;
-                    nextState = false;
-                }
-                break;
+                setTargetPos(0);
             }
-            case STAGE_1: {
-                setTargetAngle(Math.PI / 2);
-                if (nextState || Math.abs(angle - Math.PI / 2) < threshold) {
-                    state = State.STAGE_2;
-                    nextState = false;
-                } else if (previousState) {
-                    state = State.IDLE;
-                    previousState = false;
-                }
-                break;
+            case PULL_IN: {
+                setTargetPos(-0.5);
             }
-            case STAGE_2: {
-                setTargetAngle(Math.PI / 4);
-                if (nextState || Math.abs(angle - Math.PI / 4) < threshold) {
-                    state = State.WAIT;
-                    nextState = false;
-                } else if (previousState) {
-                    state = State.STAGE_1;
-                    previousState = false;
-                }
+            case EXTEND: {
+                setTargetPos(maxLength);
+                if(inPosition(threshold)) { state = State.WAIT_AT_TOP; }
             }
-            case WAIT: {
-                break;
+            case WAIT_AT_TOP: {
+                setTargetPos(maxLength);
             }
             case MANUAL_CONTROL: {
-                //kinda chopped but for now just use the gamepad to manually set targetAngle
                 break;
             }
         }
 
-        //angle the bellypan needs to spin and then convert it into the angle the servo needs to spin
-        double pow = bellypanPID.update((target_angle - angle) / gear_ratio, -1, 1);
-        pivot.setTargetPower(pow);
+        //park position in inches that the bellypan is extended
+        pos = getParkPos();
+        //positive error leads to positive power and vice versa
+        double pow = parkPID.update((target_pos - pos), -1, 1);
+
+        if (inPosition(threshold)) parkPID.resetIntegral();
+
+        //slides need to go down so power is positive
+        pow += kstatic * Math.signum(target_pos - pos);
+
+        if(target_pos <= 0 && pos < 0.5) { pow = forcePullInPower; }
+
+        if(target_pos == maxLength && inPosition(threshold)) { pow = stayUpPower; }
+
+        park.setTargetPower(Utils.minMaxClip(pow, -1,1));
 
         this.updateTelemetry();
     }
 
     private void updateTelemetry() {
         TelemetryUtil.packet.put("Park : state", this.state);
-        TelemetryUtil.packet.put("Park : angle", this.angle);
+        TelemetryUtil.packet.put("Park : position", pos);
         LogUtil.parkState.set(this.state.toString());
-        LogUtil.parkAngle.set(this.angle);
+        LogUtil.parkAngle.set(pos);
     }
 
-    public void setTargetAngle(double target) { target_angle = target; }
+    public void setTargetPos(double target) { target_pos = Utils.minMaxClip(target, -0.5, maxLength); }
 
-    public double getBellypanAngle() { return robot.sensors.getParkAngleTraveled() * gear_ratio; }
+    public double getParkPos() { return robot.sensors.getParkPos(); }
 
-    public void moveNextState() { nextState = true; }
-
-    public void movePreviousState() {
-        //wtf is the state before idle :sob
-        if (this.state != State.IDLE) {
-            previousState = true;
-        }
-    }
+    public boolean inPosition(double t) {return Math.abs(target_pos - pos) < t;}
 }

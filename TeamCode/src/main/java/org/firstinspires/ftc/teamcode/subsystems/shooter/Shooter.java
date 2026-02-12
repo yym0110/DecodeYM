@@ -117,14 +117,14 @@ public class Shooter {
 
         this.ms1 = robot.hardwareMap.get(DcMotorEx.class, "shooter1");
         this.ms2 = robot.hardwareMap.get(DcMotorEx.class, "shooter2");
-        flywheel = new PriorityMotor(new DcMotorEx[]{ms1, ms2},"flywheel",3, 5, new double[] {1, -1}, robot.sensors);
+        flywheel = new PriorityMotor(new DcMotorEx[]{ms1, ms2},"flywheel",3, 5, new double[] {1, -1}, robot.sensors, false);
 
         hood = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "hood1")},
             "hood", nPriorityServo.ServoType.AXON_MINI,
             0.027, 0.4, 0.03,
             new boolean[] {false},
-            3, 7
+            3, 7, true
         );
 
         flywheelBlocker = new nPriorityServo(
@@ -132,14 +132,14 @@ public class Shooter {
             "flywheelBlocker", nPriorityServo.ServoType.AXON_MICRO,
             0, 0.7, 0.1,
             new boolean[] {false},
-            2, 2
+            2, 2, true
         );
 
         turret = new PriorityCRServo(
                 new CRServo[] {robot.hardwareMap.get(CRServo.class, "turret1"), robot.hardwareMap.get(CRServo.class, "turret2")},
                 "turret", PriorityCRServo.ServoType.AXON_MINI,
                 new boolean[] {false, false},
-                5, 6
+                5, 6, true
         );
 
         robot.hardwareQueue.addDevices(flywheel, hood, turret, flywheelBlocker);
@@ -563,9 +563,9 @@ public class Shooter {
         double velocity; //pull from a table of values
 
         for (int i = 0; i < 2; i++) {
-            double time; //pull from a table of values
+            double time = 0; //pull from a table of values
             // Calculate where the fakeGoal is
-            Pose2d virtualGoal = realGoal.subtract(robotVelocity.mult(time));
+            Pose2d virtualGoal = realGoal;
             // Calculate dist to the virtual goal
             double virtualDist = Math.sqrt(Math.pow(ROBOT_POSITION.x - virtualGoal.x,2) + Math.pow(ROBOT_POSITION.y - virtualGoal.y, 2));
             // Get a more accurate time of flight for this new distance

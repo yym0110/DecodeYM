@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
 import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
@@ -53,7 +54,9 @@ public class MergeLocalizer extends Localizer {
 
     // Limelight
     private LLResult result = null;
-    private Pose2d globalLLEstimate = null;
+    //private Pose2d globalLLEstimate = null;
+    private Pose2d estimatedLLPose = new Pose2d(0,0,0);
+    private Pose2d poseWithoutLL = new Pose2d(0,0,0);
     public static boolean useLimelight = false;
 
     public void update() {
@@ -80,6 +83,7 @@ public class MergeLocalizer extends Localizer {
 
         Pose2d relDelta = new Pose2d (relDeltaX,relDeltaY,deltaHeading);
         constAccelMath.calculate(loopTime, relDelta, currentPose);
+        constAccelMath.calculate(loopTime, relDelta, poseWithoutLL);
 
         // PINPOINT
 
@@ -107,44 +111,34 @@ public class MergeLocalizer extends Localizer {
 
             lastPinpointPose = new Pose2d (pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading());
             currentPose = globalPinpointEstimate.clone();
+            poseWithoutLL = globalPinpointEstimate.clone();
             lastPinpointMergePose = globalPinpointEstimate.clone();
         }
 
         if (lastPinpointPose != null) {
             Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-            DashboardUtil.drawRobot(fieldOverlay, lastPinpointPose, this.expectedColor);
+            DashboardUtil.drawRobot(fieldOverlay, lastPinpointPose, this.expectedColor); // pink / magenta
         }
 
         // LIMELIGHT
 
         if (useLimelight && drivetrain.vision != null) {
+            //drivetrain.vision.reOrient(Math.toDegrees(poseWithoutLL.heading));
+            drivetrain.vision.reOrient(currentPose.heading);
             drivetrain.vision.update();
             result = drivetrain.vision.getResult();
 
             // Assume 90FPS, essentially must be most recent frame
-            if (result != null && result.isValid() && result.getStaleness() < 0.006) {
-                double D = (Globals.tagHeight - Vision.cameraHeight) / Math.tan(Math.toRadians(0.97 - 0.729 * result.getTx() + 9.37 * 0.001 * result.getTx() * result.getTx()));
-                double thetaLime = AngleUtil.clipAngle(Globals.ROBOT_POSITION.heading - Math.toRadians(2.88 + 0.249 * result.getTy() + 0.0325 * result.getTy() * result.getTy()));
-                Pose2d tag = (result.getFiducialResults().get(0).getFiducialId() == 24) ? Globals.redTag.clone() : Globals.blueTag.clone();
+            if (result != null && result.isValid()) {
+                Pose3D llPose = result.getBotpose_MT2();
 
-                Pose2d estimatedLLPose = new Pose2d(
-                        tag.x - D * Math.cos(thetaLime),
-                        tag.y - D * Math.sin(thetaLime),
-                        Math.atan2(tag.y - D * Math.sin(thetaLime), tag.x - D * Math.cos(thetaLime))
-                );
+                //39.3700787 is meters to inches
+                //x and y are meant to be switched with a negative, limelight coordinate system is different then ours
+                estimatedLLPose = new Pose2d(llPose.getPosition().y * 39.3700787,  -1 *  llPose.getPosition().x * 39.3700787, llPose.getOrientation().getYaw());
 
-                globalLLEstimate = new Pose2d(
-                        estimatedLLPose.x - 6.4 * Math.cos(estimatedLLPose.heading) + 5.5 * Math.sin(estimatedLLPose.heading),
-                        estimatedLLPose.y - 6.4 * Math.sin(estimatedLLPose.heading) + 5.5 * Math.cos(estimatedLLPose.heading),
-                        estimatedLLPose.heading
-                );
-
-                Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-                DashboardUtil.drawRobot(fieldOverlay, globalLLEstimate, this.expectedColor);
-
-                currentPose.x = currentPose.x * 0.5 + globalLLEstimate.x * 0.5;
-                currentPose.y = currentPose.y * 0.5 + globalLLEstimate.y * 0.5;
-                currentPose.heading = currentPose.heading * 0.5 + globalLLEstimate.heading * 0.5;
+                currentPose.x = currentPose.x * 0.5 + estimatedLLPose.x * 0.5;
+                currentPose.y = currentPose.y * 0.5 + estimatedLLPose.y * 0.5;
+                currentPose.heading = currentPose.heading * 0.5 + estimatedLLPose.heading * 0.5;
             }
         }
 
@@ -178,13 +172,27 @@ public class MergeLocalizer extends Localizer {
         TelemetryUtil.packet.put("Pinpoint y", pinpoint.getPosY());
         TelemetryUtil.packet.put("Pinpoint heading", pinpoint.getHeading());
 
-        if (globalLLEstimate != null) {
-            TelemetryUtil.packet.put("Limelight x", globalLLEstimate.x);
-            TelemetryUtil.packet.put("Limelight y", globalLLEstimate.y);
-            TelemetryUtil.packet.put("Limelight heading", globalLLEstimate.heading);
+        if (estimatedLLPose != null) {
+            TelemetryUtil.packet.put("Limelight x", estimatedLLPose.x);
+            TelemetryUtil.packet.put("Limelight y", estimatedLLPose.y);
+            TelemetryUtil.packet.put("Limelight heading", estimatedLLPose.heading);
+
+        }
+
+        if(result.isValid()) {
+            TelemetryUtil.packet.put("Limelight result is valid", "true");
+        } else {
+            TelemetryUtil.packet.put("Limelight result is valid", "false");
+        }
+
+        if(result != null) {
+            TelemetryUtil.packet.put("Limelight result is not null", "true");
+        } else {
+            TelemetryUtil.packet.put("Limelight result is not null", "false");
         }
 
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-        DashboardUtil.drawRobot(fieldOverlay, getPoseEstimate(), this.color);
+        DashboardUtil.drawRobot(fieldOverlay, getPoseEstimate(), this.color); // blue
+        DashboardUtil.drawRobot(fieldOverlay, estimatedLLPose, "#90d5ff");
     }
 }

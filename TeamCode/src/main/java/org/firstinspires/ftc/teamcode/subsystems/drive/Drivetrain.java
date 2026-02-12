@@ -66,22 +66,22 @@ public class Drivetrain {
         leftFront = new PriorityMotor(
             hardwareMap.get(DcMotorEx.class, "leftFront"),
             "leftFront", 4, 5,
-            1.0, sensors
+            1.0, sensors, true
         );
         leftRear = new PriorityMotor(
             hardwareMap.get(DcMotorEx.class, "leftRear"),
             "leftRear", 4, 5,
-            1.0, sensors
+            1.0, sensors, true
         );
         rightRear = new PriorityMotor(
             hardwareMap.get(DcMotorEx.class, "rightRear"),
             "rightRear", 4, 5,
-            1.0, sensors
+            1.0, sensors, true
         );
         rightFront = new PriorityMotor(
             hardwareMap.get(DcMotorEx.class, "rightFront"),
             "rightFront", 4, 5,
-            1.0, sensors
+            1.0, sensors, true
         );
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
@@ -387,7 +387,7 @@ public class Drivetrain {
 
         Canvas canvas = TelemetryUtil.packet.fieldOverlay();
         if (path != null) {
-            DashboardUtil.drawRobot(canvas, new Pose2d(ROBOT_POSITION.x + sensors.loopTime * pd.vel.x, ROBOT_POSITION.y + sensors.loopTime * pd.vel.y, Math.atan2(pd.vel.y, pd.vel.x)), "#8000ff");
+            DashboardUtil.drawRobot(canvas, new Pose2d(ROBOT_POSITION.x + sensors.loopTime * pd.vel.x, ROBOT_POSITION.y + sensors.loopTime * pd.vel.y, Math.atan2(pd.vel.y, pd.vel.x)), "#8000ff"); // purple
             Spline s = path.pathSegments.get(pd.index).spline;
             LogUtil.drivePath.set(s.toString());
 
@@ -401,7 +401,7 @@ public class Drivetrain {
                 canvas.fillCircle(repel.x, repel.y, 0.5);
             }
         } else {
-            DashboardUtil.drawRobot(canvas, targetPoint, isWaypoint ? "#c040ff" : "#8000ff");
+            DashboardUtil.drawRobot(canvas, targetPoint, isWaypoint ? "#c040ff" : "#8000ff"); // purple and bright violet
             LogUtil.drivePath.set(String.format(Locale.US, "%.3f %.3f %.3f", targetPoint.x, targetPoint.y, targetPoint.heading));
         }
     }

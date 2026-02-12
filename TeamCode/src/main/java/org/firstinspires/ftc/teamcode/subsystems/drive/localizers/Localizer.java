@@ -271,6 +271,6 @@ public class Localizer {
         TelemetryUtil.packet.put(this.getClass().getSimpleName()+" distance", distanceTraveled);
 
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-        DashboardUtil.drawRobot(fieldOverlay, getPoseEstimate(), color);
+        DashboardUtil.drawRobot(fieldOverlay, getPoseEstimate(), color); // red
     }
 }

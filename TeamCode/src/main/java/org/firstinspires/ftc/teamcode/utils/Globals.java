@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.utils;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.teamcode.subsystems.drive.RepulsionPoint;
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -58,4 +59,13 @@ public class Globals {
         LOOP_TIME = (System.nanoTime() - LOOP_START) / 1.0e9; // converts from nano secs to secs
         return LOOP_TIME;
     }
+
+
+    public enum LOOP_TIME_STAGE {
+        NORMAL,
+        NO_EX_HUB
+    }
+
+    public static LOOP_TIME_STAGE state = LOOP_TIME_STAGE.NORMAL;
+
 }

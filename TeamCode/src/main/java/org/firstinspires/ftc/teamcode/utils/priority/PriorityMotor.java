@@ -19,16 +19,16 @@ public class PriorityMotor extends PriorityDevice {
     private double minPowerToOvercomeKineticFriction = 0.0;
     private long lastZeroTime = 0;
 
-    public PriorityMotor(DcMotorEx motor, String name, double basePriority, double priorityScale, double multiplier, Sensors sensors) {
-        this(new DcMotorEx[] {motor}, name, basePriority, priorityScale, new double[]{multiplier}, sensors);
+    public PriorityMotor(DcMotorEx motor, String name, double basePriority, double priorityScale, double multiplier, Sensors sensors, boolean chub) {
+        this(new DcMotorEx[] {motor}, name, basePriority, priorityScale, new double[]{multiplier}, sensors, chub);
     }
 
-    public PriorityMotor(DcMotorEx motor, String name, double basePriority, double priorityScale, Sensors sensors) {
-        this(new DcMotorEx[] {motor}, name, basePriority, priorityScale, new double[]{1}, sensors);
+    public PriorityMotor(DcMotorEx motor, String name, double basePriority, double priorityScale, Sensors sensors, boolean chub) {
+        this(new DcMotorEx[] {motor}, name, basePriority, priorityScale, new double[]{1}, sensors, chub);
     }
 
-    public PriorityMotor(DcMotorEx[] motor, String name, double basePriority, double priorityScale, double[] multiplier, Sensors sensors) {
-        super(basePriority, priorityScale, name);
+    public PriorityMotor(DcMotorEx[] motor, String name, double basePriority, double priorityScale, double[] multiplier, Sensors sensors, boolean chub) {
+        super(basePriority, priorityScale, name, chub);
         this.motor = motor;
         this.sensors = sensors;
 

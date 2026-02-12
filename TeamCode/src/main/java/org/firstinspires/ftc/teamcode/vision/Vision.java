@@ -52,6 +52,10 @@ public class Vision {
         this.obelisk = index == 2;
     }
 
+    public void reOrient(double heading) {
+        limelight.updateRobotOrientation(heading);
+    }
+
     // visionPortal methods
 
     public void startStreaming () {

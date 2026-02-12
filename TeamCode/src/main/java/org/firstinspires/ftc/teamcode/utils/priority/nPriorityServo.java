@@ -57,8 +57,8 @@ public class nPriorityServo extends PriorityDevice {
      * @param basePriority BP
      * @param priorityScale PS
      */
-    public nPriorityServo(Servo[] servos, String name, ServoType type, double minPos, double maxPos, double basePos, boolean[] reversed, double basePriority, double priorityScale) {
-        super(basePriority, priorityScale, name);
+    public nPriorityServo(Servo[] servos, String name, ServoType type, double minPos, double maxPos, double basePos, boolean[] reversed, double basePriority, double priorityScale, boolean chub) {
+        super(basePriority, priorityScale, name, chub);
         this.servos = servos;
         this.type = type;
         this.minPos = minPos;

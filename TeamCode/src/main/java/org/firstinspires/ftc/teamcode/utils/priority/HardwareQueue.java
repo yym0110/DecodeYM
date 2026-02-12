@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.utils.priority;
 
 import static org.firstinspires.ftc.teamcode.utils.Globals.GET_LOOP_TIME;
+import static org.firstinspires.ftc.teamcode.utils.Globals.LOOP_TIME;
 
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
+
+import org.firstinspires.ftc.teamcode.utils.Globals;
+import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
 import java.util.ArrayList;
 
@@ -38,29 +42,72 @@ public class HardwareQueue {
             device.resetUpdateBoolean();
         }
 
-        double bestDevice;
-        double loopTime = GET_LOOP_TIME(); // finds loopTime in seconds
-        int numUpdates = 0;
-        do { // updates the motors while still time remaining in the loop
-            int bestIndex = 0;
-            bestDevice = devices.get(0).getPriority(targetLoopLength - loopTime);
-            if (bestDevice > 0) Log.i("HardwareQueue priority", devices.get(0).name + ": " + bestDevice);
+        switch(Globals.state) {
+            case NORMAL: {
+                double bestDevice;
+                double loopTime = GET_LOOP_TIME(); // finds loopTime in seconds
+                int numUpdates = 0;
+                do { // updates the motors while still time remaining in the loop
+                    int bestIndex = 0;
+                    bestDevice = devices.get(0).getPriority(targetLoopLength - loopTime);
+                    if (bestDevice > 0)
+                        Log.i("HardwareQueue priority", devices.get(0).name + ": " + bestDevice);
 
-            // finds motor that needs updating the most
-            for (int i = 1; i < devices.size(); i++) { //finding the motor that is most in need of being updated;
-                double currentMotor = devices.get(i).getPriority(targetLoopLength - loopTime);
-                if (currentMotor > 0) Log.i("HardwareQueue priority", devices.get(i).name + ": " + currentMotor);
-                if (currentMotor > bestDevice) {
-                    bestIndex = i;
-                    bestDevice = currentMotor;
-                }
+                    // finds motor that needs updating the most
+                    for (int i = 1; i < devices.size(); i++) { //finding the motor that is most in need of being updated;
+                        double currentMotor = devices.get(i).getPriority(targetLoopLength - loopTime);
+                        if (currentMotor > 0)
+                            Log.i("HardwareQueue priority", devices.get(i).name + ": " + currentMotor);
+                        if (currentMotor > bestDevice) {
+                            bestIndex = i;
+                            bestDevice = currentMotor;
+                        }
+                    }
+                    if (bestDevice != 0) { // priority # of motor needing update the most
+                        devices.get(bestIndex).update(); // Resetting the motor priority so that it knows that it updated the motor and setting the motor of the one that most needs it
+                        numUpdates++;
+                    }
+                    loopTime = GET_LOOP_TIME();
+                } while (bestDevice > 0 && loopTime <= targetLoopLength);
+                Log.i("HardwareQueue numUpdates", numUpdates + "");
             }
-            if (bestDevice != 0) { // priority # of motor needing update the most
-                devices.get(bestIndex).update(); // Resetting the motor priority so that it knows that it updated the motor and setting the motor of the one that most needs it
-                numUpdates++;
+
+            case NO_EX_HUB: {
+                double bestDevice;
+                double loopTime = GET_LOOP_TIME(); // finds loopTime in seconds
+                int numUpdates = 0;
+                do { // updates the motors while still time remaining in the loop
+                    int bestIndex = 0;
+                    bestDevice = devices.get(0).getPriority(targetLoopLength - loopTime);
+                    if (bestDevice > 0)
+                        Log.i("HardwareQueue priority", devices.get(0).name + ": " + bestDevice);
+
+                    // finds motor that needs updating the most
+                    for (int i = 1; i < devices.size(); i++) { //finding the motor that is most in need of being updated;
+
+                        if(devices.get(i).isChub()) {
+                            double currentMotor = devices.get(i).getPriority(targetLoopLength - loopTime);
+                            if (currentMotor > 0)
+                                Log.i("HardwareQueue priority", devices.get(i).name + ": " + currentMotor);
+                            if (currentMotor > bestDevice) {
+                                bestIndex = i;
+                                bestDevice = currentMotor;
+                            }
+
+                        }
+                    }
+                    if (bestDevice != 0) { // priority # of motor needing update the most
+                        devices.get(bestIndex).update(); // Resetting the motor priority so that it knows that it updated the motor and setting the motor of the one that most needs it
+                        numUpdates++;
+                    }
+                    loopTime = GET_LOOP_TIME();
+                } while (bestDevice > 0 && loopTime <= targetLoopLength);
+                Log.i("HardwareQueue numUpdates", numUpdates + "");
             }
-            loopTime = GET_LOOP_TIME();
-        } while (bestDevice > 0 && loopTime <= targetLoopLength);
-        Log.i("HardwareQueue numUpdates", numUpdates + "");
+
+        }
+
+        TelemetryUtil.packet.put("Loop Time State", Globals.state);
+
     }
 }

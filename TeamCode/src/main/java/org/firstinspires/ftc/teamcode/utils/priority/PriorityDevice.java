@@ -5,12 +5,14 @@ public abstract class PriorityDevice {
     public final String name;
     protected double lastUpdateTime, callLengthMillis;
     boolean isUpdated = false;
+    boolean chub;
 
-    public PriorityDevice(double basePriority, double priorityScale, String name) {
+    public PriorityDevice(double basePriority, double priorityScale, String name, boolean chub) {
         this.basePriority = basePriority;
         this.priorityScale = priorityScale;
         this.name = name;
         lastUpdateTime = System.nanoTime();
+        this.chub = chub;
     }
 
     protected abstract double getPriority(double timeRemaining);
@@ -19,5 +21,9 @@ public abstract class PriorityDevice {
 
     public void resetUpdateBoolean() {
         isUpdated = false;
+    }
+
+    public boolean isChub () {
+        return chub;
     }
 }

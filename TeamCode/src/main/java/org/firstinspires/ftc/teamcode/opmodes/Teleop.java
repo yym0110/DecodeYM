@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Utils;
+import org.firstinspires.ftc.teamcode.vision.Vision;
 
 import java.util.Locale;
 
@@ -27,7 +28,9 @@ public class Teleop extends LinearOpMode {
 
     public void runOpMode() {
         Globals.RUNMODE = RunMode.TELEOP;
-        Robot robot = new Robot(hardwareMap); // new Vision(hardwareMap)
+        Robot robot = new Robot(hardwareMap, new Vision(hardwareMap));
+
+        //robot.drivetrain.vision.start();
         robot.setStopChecker(this::isStopRequested);
 
         robot.shooter.state = Shooter.State.TEST;

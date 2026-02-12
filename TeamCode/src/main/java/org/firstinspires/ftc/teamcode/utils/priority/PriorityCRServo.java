@@ -34,15 +34,15 @@ public class PriorityCRServo extends PriorityDevice {
     private double angle = 0;
     public final ServoType servoType;
 
-    public PriorityCRServo(CRServo servo, String name, ServoType servoType, boolean[] reversed, double basePriority, double priorityScale) {
-        super(basePriority, priorityScale, name);
+    public PriorityCRServo(CRServo servo, String name, ServoType servoType, boolean[] reversed, double basePriority, double priorityScale, boolean chub) {
+        super(basePriority, priorityScale, name, chub);
         this.servo = new CRServo[]{servo};
         this.reversed = reversed;
         this.servoType = servoType;
     }
 
-    public PriorityCRServo(CRServo[] servos, String name, ServoType servoType, boolean[] reversed, double basePriority, double priorityScale) { //one of the servos must be reversed prior to use
-        super(basePriority, priorityScale, name);
+    public PriorityCRServo(CRServo[] servos, String name, ServoType servoType, boolean[] reversed, double basePriority, double priorityScale, boolean chub) { //one of the servos must be reversed prior to use
+        super(basePriority, priorityScale, name, chub);
         this.servo = servos;
         this.reversed = reversed;
         this.servoType = servoType;

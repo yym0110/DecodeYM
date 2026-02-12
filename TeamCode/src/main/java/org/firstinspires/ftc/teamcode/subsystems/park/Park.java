@@ -56,7 +56,7 @@ public class Park {
             new CRServo[]{robot.hardwareMap.get(CRServo.class, "park1"), robot.hardwareMap.get(CRServo.class,"park2")},
             "park", PriorityCRServo.ServoType.AXON_MAX,
             new boolean[]{false, true},
-            2, 5
+            2, 5, false
         );
 
         robot.hardwareQueue.addDevice(park);

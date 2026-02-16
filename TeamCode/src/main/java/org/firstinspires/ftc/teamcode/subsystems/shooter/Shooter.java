@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Utils;
+import org.firstinspires.ftc.teamcode.utils.Vector2;
 import org.firstinspires.ftc.teamcode.utils.Vector3;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityCRServo;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
@@ -49,7 +50,7 @@ public class Shooter {
     private boolean aimRequest = false, shootRequest = false, stopRequest = false;
     public boolean turretTrackInManual = false;
 
-    public static PID turretPID = new PID (0.15, 0.0, 0);
+    public static PID turretPID = new PID (0.4, 0.0, 0.1);
     public static double turretKStatic = 0.07;
     public static double turretKStaticLeft = 0.07;
     public static double turretKStaticRight = -0.07;
@@ -306,6 +307,8 @@ public class Shooter {
         lastTurretTarget = targetTurretAngle;
         double turretAngle = robot.sensors.getTurretAngle();
         double turretError = targetTurretAngle - Sensors.turretAngleClip(turretAngle);
+        if(Math.hypot(ROBOT_VELOCITY.x,ROBOT_VELOCITY.y) > 10){ turretPID.updatePID(0.8,0,0); }
+        else {turretPID.updatePID(0.4, 0, 0.1);}
         double turretPow = turretPID.update(turretError, -1, 1);
         if (turretError > 0) turretPow += turretKStaticLeft;
         else if (turretError < 0) turretPow += turretKStaticRight;
@@ -569,33 +572,50 @@ public class Shooter {
     public boolean atVel() { return Math.abs(targetVelocity - filteredVelocity) <= atVelThresh; }
 
     public void predictGoal() {
+        /*
+        if (ROBOT_POSITION.x >= 24) ballTarget = new Vector3(-68, ballInterpolateYFar * (Globals.isRed ? 1 : -1), ballInterpolateZFar);
+        else {
+            double k = Utils.minMaxClip(Math.hypot(-71 - ROBOT_POSITION.x, 71 * (Globals.isRed ? 1 : -1) - ROBOT_POSITION.y), 0, 126) / 126;
+            ballTarget = new Vector3(-68, (ballInterpolateYCloseS * k + ballInterpolateYCloseB * (1 - k)) * (Globals.isRed ? 1 : -1), ballInterpolateZCloseS * k + ballInterpolateZCloseB * (1 - k));
+        }
+        if (ROBOT_POSITION.x + 48 <= ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) ballTarget = new Vector3(ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.x * (Globals.isRed ? -1 : 1), ballTarget.z);
         // Original target
-        Pose2d realGoal = new Pose2d(-68, 67 * (Globals.isRed ? 1 : -1));
-
+        */
+        ballTarget = new Vector3(-68,68,46);
         // Initial values based on the target
         double initialDist = Math.hypot(ballTarget.x - ROBOT_POSITION.x, ballTarget.y - ROBOT_POSITION.y);
         ShotSetpoint values = shooterTable.getSetpoint(initialDist);
 
         // Setting initial goal for the virtual
-        double virtualX = realGoal.x;
-        double virtualY = realGoal.y;
+        double virtualX = ballTarget.x;
+        double virtualY = ballTarget.y;
 
         // Looping through virtual goal
         //getting time of flight
         double time = initialDist/(values.flywheelVel*Math.cos((values.hoodAngle-0.03)/(1 / Math.toRadians(305))));
 
         // Offset the virtual goal by the robot's velocity during flight
-        virtualX = realGoal.x - (ROBOT_VELOCITY.x * time);
-        virtualY = realGoal.y - (ROBOT_VELOCITY.y * time);
-
+        if(Math.hypot(ROBOT_VELOCITY.x,ROBOT_VELOCITY.y)>10) {
+            virtualX = ballTarget.x - (ROBOT_VELOCITY.x * time);
+            virtualY = ballTarget.y - (ROBOT_VELOCITY.y * time);
+        }
         //Calculate distance to virtual goal
         double virtualDist = Math.hypot(virtualX - ROBOT_POSITION.x, virtualY - ROBOT_POSITION.y);
         // Get new shooter values from the regression based off of virtual distance
         values = shooterTable.getSetpoint(virtualDist);
 
         // Outputting final result
-        targetHoodAngle = values.hoodAngle;
-        minFlywheelVelocity= values.flywheelVel;
+        if(Math.hypot(ROBOT_VELOCITY.x,ROBOT_VELOCITY.y)>10){
+            Vector2 goalUnitVector = new Vector2((virtualX - ROBOT_POSITION.x)/virtualDist, (virtualY-ROBOT_POSITION.y)/virtualDist);
+            double robotVelocityGoal = (ROBOT_VELOCITY.x * goalUnitVector.x)+(ROBOT_VELOCITY.y * goalUnitVector.y);
+            double ballVelocity = robot.sensors.getFlywheelVelocity()*Math.cos((values.hoodAngle-0.03)/(1 / Math.toRadians(305)))+robotVelocityGoal;
+            double g = 386.088;
+            minFlywheelVelocity = robot.sensors.getFlywheelVelocity();
+            targetHoodAngle = Math.atan((ballVelocity*ballVelocity + Math.sqrt(Math.pow(ballVelocity,4)-g*(g*virtualDist*virtualDist+2*(42-launcherHeight)*ballVelocity*ballVelocity)))/(g*virtualDist));
+        } else {
+            targetHoodAngle = values.hoodAngle;
+            minFlywheelVelocity= values.flywheelVel;
+        }
         double virtualTurretAngle = Math.atan2(virtualY - ROBOT_POSITION.y, virtualX - ROBOT_POSITION.x);
         targetTurretAngle = AngleUtil.clipAngle(virtualTurretAngle - ROBOT_POSITION.heading);
     }

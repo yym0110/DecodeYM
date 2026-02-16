@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.utils.priority.nPriorityServo;
 public class Intake {
     private final Robot robot;
     public final PriorityMotor roller, feed;
-    public final nPriorityServo index1, index2;
+    //public final nPriorityServo index1, index2;
 
     private boolean requestIntake = false, requestShoot = false, requestOff = false, reversed = false;
 
@@ -47,7 +47,7 @@ public class Intake {
             "feed", 2, 4,
             new double[] {1}, robot.sensors, false
         );
-
+        /*
         index1 = new nPriorityServo(
                 new Servo[]{robot.hardwareMap.get(Servo.class, "index1")},
                 "index1", nPriorityServo.ServoType.AXON_MINI,
@@ -63,7 +63,7 @@ public class Intake {
                 new boolean[] {false},
                 3, 7, true
         );
-
+        */
         robot.hardwareQueue.addDevices(roller, feed);
 
         roller.motor[0].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

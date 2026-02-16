@@ -3,17 +3,20 @@ package org.firstinspires.ftc.teamcode.subsystems.intake;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.priority.PriorityMotor;
+import org.firstinspires.ftc.teamcode.utils.priority.nPriorityServo;
 
 @Config
 public class Intake {
     private final Robot robot;
     public final PriorityMotor roller, feed;
+    public final nPriorityServo index1, index2;
 
     private boolean requestIntake = false, requestShoot = false, requestOff = false, reversed = false;
 
@@ -43,6 +46,22 @@ public class Intake {
             new DcMotorEx[] {robot.hardwareMap.get(DcMotorEx.class, "feed")},
             "feed", 2, 4,
             new double[] {1}, robot.sensors, false
+        );
+
+        index1 = new nPriorityServo(
+                new Servo[]{robot.hardwareMap.get(Servo.class, "index1")},
+                "index1", nPriorityServo.ServoType.AXON_MINI,
+                0.027, 0.4, 0.03,
+                new boolean[] {false},
+                3, 7, true
+        );
+
+        index2 = new nPriorityServo(
+                new Servo[]{robot.hardwareMap.get(Servo.class, "index2")},
+                "index2", nPriorityServo.ServoType.AXON_MINI,
+                0.027, 0.4, 0.03,
+                new boolean[] {false},
+                3, 7, true
         );
 
         robot.hardwareQueue.addDevices(roller, feed);

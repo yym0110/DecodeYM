@@ -122,6 +122,7 @@ public class Shooter {
         this.shooterTable = new ShotTable();
 
         // Add: addSetpoint(distanceInches(from goal), new ShotSetpoint(flywheelVel, hoodPos, timeOfFlight(seconds)))
+        shooterTable.addSetpoint(0, new ShotSetpoint(0,0 , 0));
         shooterTable.addSetpoint(40.3, new ShotSetpoint(430,0 , 0.75));
         shooterTable.addSetpoint(43.6, new ShotSetpoint(440,0.05 , 0.9));
         shooterTable.addSetpoint(48.5, new ShotSetpoint(465,0.2 , 0.6));
@@ -185,7 +186,6 @@ public class Shooter {
                 setShooterBlocker(true);
                 TelemetryUtil.packet.put("Aim: aimLauncherV8", "before");
                 //boolean aimResult = aimLauncherV8();
-                turretTrackTarget();
                 predictGoal();
                 boolean turretResult = Math.abs(targetTurretAngle - robot.sensors.getTurretAngle()) <= Math.toRadians(ROBOT_POSITION.x >= 24 ? 3 : 2);
                 //TelemetryUtil.packet.put("Aim: aimResult", aimResult);
@@ -582,11 +582,11 @@ public class Shooter {
 
         // Looping through virtual goal
         //getting time of flight
-        double tof = values.timeOfFlight;
+        double time = initialDist/(values.flywheelVel*Math.cos((values.hoodAngle-0.03)/(1 / Math.toRadians(305))));
 
         // Offset the virtual goal by the robot's velocity during flight
-        virtualX = realGoal.x - (ROBOT_VELOCITY.x * tof);
-        virtualY = realGoal.y - (ROBOT_VELOCITY.y * tof);
+        virtualX = realGoal.x - (ROBOT_VELOCITY.x * time);
+        virtualY = realGoal.y - (ROBOT_VELOCITY.y * time);
 
         //Calculate distance to virtual goal
         double virtualDist = Math.hypot(virtualX - ROBOT_POSITION.x, virtualY - ROBOT_POSITION.y);

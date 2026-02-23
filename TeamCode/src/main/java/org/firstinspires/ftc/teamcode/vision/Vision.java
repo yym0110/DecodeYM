@@ -37,7 +37,6 @@ public class Vision {
 
     public Vision (HardwareMap hardwareMap) {
         init(hardwareMap);
-
     }
 
     public void init(HardwareMap HardwareMap) {
@@ -56,14 +55,11 @@ public class Vision {
                         new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0))
                 .build();
 
-
         VisionPortal.Builder builder = new VisionPortal.Builder()
                 .setCamera(HardwareMap.get(WebcamName.class, "camera"))
                 .setCameraResolution(new Size(640, 480))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .addProcessor(aprilTagProcessor);
-
-
 
         visionPortal = builder.build();
 
@@ -80,9 +76,7 @@ public class Vision {
     }
 
     public Pose2d update() {
-
         visionPortal.setProcessorEnabled(aprilTagProcessor, true);
-
         detections = aprilTagProcessor.getDetections();
 
         Log.i("Number of apriltags", "0");
@@ -94,8 +88,6 @@ public class Vision {
                 AprilTagDetection detection2 = detections.get(1);
 
                 if(detection1 != null && detection2 != null) {
-
-
                     Pose3D robotPose1 = detection1.robotPose;
                     Pose3D robotPose2 = detection2.robotPose;
 
@@ -125,11 +117,6 @@ public class Vision {
             }
         }
 
-
-
         return null;
     }
-
-
-
 }

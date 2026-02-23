@@ -125,7 +125,7 @@ public class MergeLocalizer extends Localizer {
 
         // LIMELIGHT
 
-        if (useLimelight && drivetrain.vision != null) {
+        /*if (useLimelight && drivetrain.vision != null) {
             drivetrain.vision.update();
             result = drivetrain.vision.getResult();
 
@@ -139,7 +139,7 @@ public class MergeLocalizer extends Localizer {
                 currentPose.y = currentPose.y * 0.5 + estimatedLLPose.y * 0.5;
                 currentPose.heading = currentPose.heading * 0.5 + estimatedLLPose.heading * 0.5;
             }
-        }
+        }*/
 
         x = currentPose.x;
         y = currentPose.y;

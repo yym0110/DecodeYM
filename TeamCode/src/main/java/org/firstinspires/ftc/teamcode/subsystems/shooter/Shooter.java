@@ -96,17 +96,17 @@ public class Shooter {
 
         this.shooterTable = new ShotTable();
         // Add: addSetpoint(distanceInches(from goal), new ShotSetpoint(flywheelVel, hoodPos, timeOfFlight(seconds)))
-        shooterTable.addSetpoint(0, new ShotSetpoint(0,0 , 0));
-        shooterTable.addSetpoint(40.3, new ShotSetpoint(430,0 , 0.75));
-        shooterTable.addSetpoint(43.6, new ShotSetpoint(440,0.05 , 0.9));
-        shooterTable.addSetpoint(48.5, new ShotSetpoint(465,0.2 , 0.6));
-        shooterTable.addSetpoint(52.9, new ShotSetpoint(470,0.25 , 0.62 ));
-        shooterTable.addSetpoint(65, new ShotSetpoint(545,0.5 , 0.6));
-        shooterTable.addSetpoint(76.4, new ShotSetpoint(555,0.5 , 0.53));
-        shooterTable.addSetpoint(85, new ShotSetpoint(585,0.55 , 0.55));
-        shooterTable.addSetpoint(94.8, new ShotSetpoint(600,0.6 , 0.6));
-        shooterTable.addSetpoint(136.9, new ShotSetpoint(665,0.65 , 0.82));
-        shooterTable.addSetpoint(148, new ShotSetpoint(700,0.75 , 0));
+        shooterTable.addSetpoint(0, new ShotSetpoint(0,0 ));
+        shooterTable.addSetpoint(40.3, new ShotSetpoint(430,0));
+        shooterTable.addSetpoint(43.6, new ShotSetpoint(440,0.05));
+        shooterTable.addSetpoint(48.5, new ShotSetpoint(465,0.2));
+        shooterTable.addSetpoint(52.9, new ShotSetpoint(470,0.25));
+        shooterTable.addSetpoint(65, new ShotSetpoint(545,0.5));
+        shooterTable.addSetpoint(76.4, new ShotSetpoint(555,0.5 ));
+        shooterTable.addSetpoint(85, new ShotSetpoint(585,0.55 ));
+        shooterTable.addSetpoint(94.8, new ShotSetpoint(600,0.6));
+        shooterTable.addSetpoint(136.9, new ShotSetpoint(665,0.65 ));
+        shooterTable.addSetpoint(148, new ShotSetpoint(700,0.75));
 
         hood = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "hood1")},
@@ -503,6 +503,7 @@ public class Shooter {
         // Looping through virtual goal
         //getting time of flight
 		// TODO Please add comments to explain long expressions like this
+        //converting hood pos into angle using the conversion in nPriorityServo
         double time = initialDist/(values.flywheelVel*Math.cos((values.hoodAngle-0.03)/(1 / Math.toRadians(305))));
 
         // Offset the virtual goal by the robot's velocity during flight

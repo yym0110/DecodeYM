@@ -4,19 +4,16 @@ import java.util.TreeMap;
 class ShotSetpoint {
     public final double flywheelVel;
     public final double hoodAngle;
-    public final double timeOfFlight;
 
-    public ShotSetpoint(double shootVel, double hood, double time) {
+    public ShotSetpoint(double shootVel, double hood) {
         this.flywheelVel = shootVel;
         this.hoodAngle = hood;
-        this.timeOfFlight = time;
     }
 
     public ShotSetpoint lerp(ShotSetpoint other, double fraction) {
         return new ShotSetpoint(
                 this.flywheelVel + (other.flywheelVel - this.flywheelVel) * fraction,
                 this.hoodAngle + (other.hoodAngle - this.hoodAngle) * fraction,
-                this.timeOfFlight + (other.timeOfFlight - this.timeOfFlight) * fraction
         );
     }
 }
@@ -47,7 +44,6 @@ public class ShotTable {
         return new ShotSetpoint(
                 baseSetpoint.flywheelVel * flywheelMultiplier, //offset created just in case we are consistently off, we can tune this
                 baseSetpoint.hoodAngle * hoodMultiplier, //offset created just in case we are consistently off, we can tune this
-                baseSetpoint.timeOfFlight //this one shouldn't change too much we can make a multiplier in the future if the need comes for SOTM.
         );
     }
 }

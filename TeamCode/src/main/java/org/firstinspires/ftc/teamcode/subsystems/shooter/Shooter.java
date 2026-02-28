@@ -163,9 +163,9 @@ public class Shooter {
                 predictGoal();
                 boolean turretResult = turret.inPosition();
                 //TelemetryUtil.packet.put("Aim: aimResult", aimResult);
-                //TelemetryUtil.packet.put("Aim: turretResult", turretResult);
-                //TelemetryUtil.packet.put("Aim: hood.inPosition", hood.inPosition());
-                //TelemetryUtil.packet.put("Aim: atVel", atVel());
+                TelemetryUtil.packet.put("Aim: turretResult", turretResult);
+                TelemetryUtil.packet.put("Aim: hood.inPosition", hood.inPosition());
+                TelemetryUtil.packet.put("Aim: atVel", atVel());
                 if (turretResult && this.atVel() && hood.inPosition()) {
                     state = State.READY;
                 }
@@ -196,11 +196,10 @@ public class Shooter {
                 flywheel.setTargetVelocity(minFlywheelVelocity);
                 setHoodAngle(targetHoodAngle);
 
-                if (shootRequest && isRobotInZone(0,0,-72,72,-72,-72)||isRobotInZone(-48,0,-72,24,-72,-24)) {
+                if (shootRequest /* && isRobotInZone(0,0,-72,72,-72,-72)||isRobotInZone(-48,0,-72,24,-72,-24) */) {
                     setShooterBlocker(false);
                     if (flywheelBlocker.inPosition()) {
                         state = State.SHOOT;
-                        robot.intake.reqShoot(true);
                     }
                 }
 
@@ -209,7 +208,7 @@ public class Shooter {
                     shootRequest = false;
                     state = State.IDLE;
                     flywheel.setTargetVelocity(0.0);
-                    robot.intake.reqShoot(false);
+                    robot.intake.reqShoot(true);
                     robot.intake.reqOff(true);
                 }
                 break;
@@ -218,14 +217,18 @@ public class Shooter {
                 shootRequest = false;
                 predictGoal();
                 setShooterBlocker(false);
+                if(flywheelBlocker.inPosition()){
+                    robot.intake.reqShoot(true);
+                }
                 //aimLauncherV8();
                 flywheel.setTargetVelocity(minFlywheelVelocity);
                 setHoodAngle(targetHoodAngle);
 
+                /*
                 if (isRobotInZone(0,0,-72,72,-72,-72)||isRobotInZone(-48,0,-72,24,-72,-24)){
                     state = State.AIMING;
                 }
-
+                */
                 if (stopRequest) {
                     stopRequest = false;
                     shootRequest = false;

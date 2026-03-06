@@ -176,19 +176,22 @@ public class MergeLocalizer extends Localizer {
                         Lerp.lerpAngle(interpolatedPastPose.heading, estimatedCameraPose.heading, cameraSmoothFactor)
                     );
                     Pose2d newPose = offsetPoseUsingGlobalDelta(currentPose, interpolatedPastPose, smoothCameraPose);
-                    TelemetryUtil.packet.put("Vision : estimatedCameraPose", estimatedCameraPose);
-                    TelemetryUtil.packet.put("Vision : pastPose", interpolatedPastPose);
-                    TelemetryUtil.packet.put("Vision : newPose", newPose);
-                    Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
-                    DashboardUtil.drawRobot(fieldOverlay, interpolatedPastPose, "#ff8000", 1);
-                    DashboardUtil.drawRobot(fieldOverlay, newPose, "#0000ff", 4);
-                    DashboardUtil.drawRobot(fieldOverlay, estimatedCameraPose, "#90d5ff", 2);
+
                     currentPose = newPose;
                     lastPinpointMergePose = offsetPoseUsingGlobalDelta(lastPinpointMergePose, interpolatedPastPose, smoothCameraPose);
                     poseHistory.replaceAll(now -> offsetPoseUsingGlobalDelta(now, interpolatedPastPose, smoothCameraPose));
                     lastFrameAcquisitionNanoTime = frameAcquisitionNanoTime;
 
                     numberOfTimesRelocalizedWithCamera++;
+
+                    TelemetryUtil.packet.put("Vision : estimatedCameraPose", estimatedCameraPose);
+                    TelemetryUtil.packet.put("Vision : pastPose", interpolatedPastPose);
+                    TelemetryUtil.packet.put("Vision : newPose", newPose);
+
+                    Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
+                    DashboardUtil.drawRobot(fieldOverlay, interpolatedPastPose, "#ff8000", 1);
+                    DashboardUtil.drawRobot(fieldOverlay, newPose, "#0000ff", 4);
+                    DashboardUtil.drawRobot(fieldOverlay, estimatedCameraPose, "#90d5ff", 2);
                 }
             }
         }
@@ -249,14 +252,24 @@ public class MergeLocalizer extends Localizer {
         TelemetryUtil.packet.put(this.getClass().getSimpleName()+" heading (deg)", Math.toDegrees(heading));
         TelemetryUtil.packet.put(this.getClass().getSimpleName()+" distance", distanceTraveled);
         TelemetryUtil.packet.put(this.getClass().getSimpleName()+" velocity", relCurrentVel);
+
         TelemetryUtil.packet.put("Pinpoint x", pinpoint.getPosX());
         TelemetryUtil.packet.put("Pinpoint y", pinpoint.getPosY());
         TelemetryUtil.packet.put("Pinpoint heading", pinpoint.getHeading());
+
+        TelemetryUtil.packet.put("Vision x", estimatedCameraPose != null ? estimatedCameraPose.x : "na");
+        TelemetryUtil.packet.put("Vision y", estimatedCameraPose != null ? estimatedCameraPose.y : "na");
+        TelemetryUtil.packet.put("Vision heading", estimatedCameraPose != null ? estimatedCameraPose.heading : "na");
+
         TelemetryUtil.packet.put("Use Vision", useCamera);
         TelemetryUtil.packet.put("Number of times Relocalized with Camera", numberOfTimesRelocalizedWithCamera);
 
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
         DashboardUtil.drawRobot(fieldOverlay, currentPose, this.color); // blue
+
+        if (estimatedCameraPose != null) {
+            DashboardUtil.drawRobot(fieldOverlay, estimatedCameraPose, "000000"); // black
+        }
         DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
     }
 }

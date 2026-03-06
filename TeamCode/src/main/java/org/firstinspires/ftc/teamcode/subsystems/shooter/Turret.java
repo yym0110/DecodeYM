@@ -17,10 +17,11 @@ public class Turret {
     private final Robot robot;
     public final PriorityCRServo turret;
 
-    public static PID turretPID = new PID (0.1, 0.0, 0.02);
-    public static double turretKStatic = 0.09;
-    public static double turretDeadzone = Math.toRadians(2.5);
-    public static double inPositionThresh = Math.toRadians(3.5);
+    public static PID turretPID = new PID (0.12, 0.01, 0.03);
+    public static PID finalAdjustPID = new PID (0.03, 0.0, 0.04);
+    public static double turretKStatic = 0.10;
+    public static double turretDeadzone = Math.toRadians(1);
+    public static double inPositionThresh = Math.toRadians(2);
     public static double turretVelFactor = 0.2;
     private double lastTurretTarget = 0.0;
     private double targetTurretAngle = 0.0;
@@ -50,12 +51,17 @@ public class Turret {
         targetTurretAngleVel = targetTurretAngleVel * (1 - targetTurretAngleVelFilter) + (targetTurretAngle - lastTurretTarget) / robot.sensors.loopTime * targetTurretAngleVelFilter;
         targetTurretAngleVel = Utils.minMaxClip(targetTurretAngleVel, -150, 150);
         lastTurretTarget = targetTurretAngle;
+
         double turretAngle = robot.sensors.getTurretAngle();
-        double turretError = targetTurretAngle - Sensors.turretAngleClip(turretAngle);
-        double turretPow = turretPID.update(turretError, -1, 1) + turretKStatic * Math.signum(turretError);
+        double turretError = targetTurretAngle - /*Sensors.turretAngleClip(turretAngle)*/ turretAngle;
+        TelemetryUtil.packet.put("Turret: error (deg)", Math.toDegrees(turretError));
+        double turretPow = (Math.abs(turretError) >= Math.toRadians(6) ? turretPID.update(turretError, -1, 1) : finalAdjustPID.update(turretError, -1, 1)) + (Math.abs(turretError) >= Math.toRadians(10) ? turretKStatic * Math.signum(turretError) : 0);
+
         //double deadzone = Math.min(inPositionThresh, turretDeadzone * 100 / Math.hypot(Globals.ROBOT_POSITION.x - robot.shooter.ballTarget.x, Globals.ROBOT_POSITION.y - robot.shooter.ballTarget.y));
+
         if (Math.abs(turretError) < turretDeadzone) turretPow = 0;
         turretPow += targetTurretAngleVel / (turret.servoType.speed) * turretVelFactor; // meant to account for robot rotating
+
         if (Math.abs(turretError) > Math.toRadians(75)) turretPow = Math.signum(turretError);
         if (turretAngle >= Sensors.turretLimitLeft) turretPow = Math.min(turretPow, -turretKStatic);
         if (turretAngle <= Sensors.turretLimitRight) turretPow = Math.max(turretPow, turretKStatic);

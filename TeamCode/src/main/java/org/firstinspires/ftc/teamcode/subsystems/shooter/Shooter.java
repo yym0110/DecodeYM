@@ -93,19 +93,16 @@ public class Shooter {
         //shooterTable.addSetpoint(39.9, new ShotSetpoint(400,Math.toRadians(27)));
         //shooterTable.addSetpoint(51.9, new ShotSetpoint(450,Math.toRadians(34)));
         //shooterTable.addSetpoint(61.3, new ShotSetpoint(480,Math.toRadians(42)));
-        shooterTable.addSetpoint(42.8, new ShotSetpoint(410,Math.toRadians(28)));
         shooterTable.addSetpoint(57.5, new ShotSetpoint(450,Math.toRadians(32)));
-        shooterTable.addSetpoint(69.3, new ShotSetpoint(472,Math.toRadians(31)));
-        shooterTable.addSetpoint(75.9, new ShotSetpoint(485,Math.toRadians(32)));
-        shooterTable.addSetpoint(98, new ShotSetpoint(528,Math.toRadians(36)));
+        shooterTable.addSetpoint(69.3, new ShotSetpoint(520,Math.toRadians(47)));
+        shooterTable.addSetpoint(73.3, new ShotSetpoint(520,Math.toRadians(47)));
+        shooterTable.addSetpoint(80.3, new ShotSetpoint(527,Math.toRadians(49)));
+        shooterTable.addSetpoint(88.9, new ShotSetpoint(542,Math.toRadians(49)));
+        shooterTable.addSetpoint(99.8, new ShotSetpoint(548,Math.toRadians(49)));
         shooterTable.addSetpoint(114.5, new ShotSetpoint(560,Math.toRadians(37)));
         shooterTable.addSetpoint(132.6, new ShotSetpoint(615,Math.toRadians(47)));
         shooterTable.addSetpoint(142.6, new ShotSetpoint(635,Math.toRadians(50)));
         shooterTable.addSetpoint(150.7, new ShotSetpoint(645,Math.toRadians(48)));
-
-
-
-
 
         hood = new nPriorityServo(
             new Servo[]{robot.hardwareMap.get(Servo.class, "hood1")},
@@ -134,8 +131,7 @@ public class Shooter {
         switch (state) {
             case IDLE: {
                 stopRequest = false;
-
-                turretTrackTarget();
+                predictGoal();
                 flywheel.setTargetVelocity(Dist.CLOSE.flywheelVel);
                 setHoodAngle(0.0);
                 setShooterBlocker(true);
@@ -540,7 +536,7 @@ public class Shooter {
         if (ROBOT_POSITION.x > 24) {
             ballTarget = new Vector3(-70,71 * (Globals.isRed ? 1 : -1),42);
         } else {
-            ballTarget = new Vector3(-68,69 * (Globals.isRed ? 1 : -1),42);
+            ballTarget = new Vector3(-64,64 * (Globals.isRed ? 1 : -1),42);
         }
         // Initial values based on the target
         double initialDist = Math.hypot(ballTarget.x - ROBOT_POSITION.x, ballTarget.y - ROBOT_POSITION.y);
@@ -567,7 +563,7 @@ public class Shooter {
         TelemetryUtil.packet.put("Shooter : Robot Velocity", Math.hypot(ROBOT_GLOBAL_VELOCITY.x, ROBOT_GLOBAL_VELOCITY.y));
 
         // Offset the virtual goal by the robot's velocity during flight
-        if (Math.hypot(ROBOT_GLOBAL_VELOCITY.x, ROBOT_GLOBAL_VELOCITY.y) > 10) {
+        if (Math.hypot(ROBOT_GLOBAL_VELOCITY.x, ROBOT_GLOBAL_VELOCITY.y) > 20) {
             virtualX = ballTarget.x - (ROBOT_GLOBAL_VELOCITY.x * time);
             virtualY = ballTarget.y - (ROBOT_GLOBAL_VELOCITY.y * time);
             Canvas canvas = TelemetryUtil.packet.fieldOverlay();

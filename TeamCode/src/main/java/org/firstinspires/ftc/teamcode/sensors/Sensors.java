@@ -42,8 +42,9 @@ public class Sensors {
     private double turretAngleEncoderOffset, turretAngleEncoderPosition;
     public static double turretAnalogEncoderOffsetDeg = 172;
     public static double turretAngleFilter = 0.6;
-    public static double turretLimitLeft = Math.toRadians(332), turretLimitRight = Math.toRadians(-22), turretWrapMid = Math.toRadians(155);
+    public static double turretLimitLeft = Math.toRadians(330), turretLimitRight = Math.toRadians(-20), turretWrapMid = Math.toRadians(155);
     public static boolean resetTurretAngleEncoder = true;
+    private static double turretAnalogEncoderVoltage;
 
     private double lightSensorFilteredVoltage = 0;
     public static double lightSensorFilter = 0.5;
@@ -63,7 +64,6 @@ public class Sensors {
         initialTime = currentTime = System.nanoTime();
         voltageSensor = robot.hardwareMap.voltageSensor.iterator().next();
         voltage = voltageSensor.getVoltage();
-
 
         turretAnalogEncoder = robot.hardwareMap.get(AnalogInput.class, "turret_encoder");
         turretAngleEncoderOffset = turretAngleEncoderPosition = turretAngle = 0;
@@ -111,13 +111,13 @@ public class Sensors {
 
         //parkEncoder.update();
 
-        if (currentTime - initialTime < 200_000_000) resetTurretAngleEncoder = true;
-        turretAngleEncoderPosition = robot.intake.feed.motor[0].getCurrentPosition() / -2.0 * Math.PI / 8192;
-        //TelemetryUtil.packet.put("Shooter : Turret angle encoder position (deg)", Math.toDegrees(turretAngleEncoderPosition));
-        double newTurretAngle = turretAngleEncoderPosition - turretAngleEncoderOffset;
+        // if (currentTime - initialTime < 200_000_000) resetTurretAngleEncoder = true;
+        turretAngleEncoderPosition = robot.intake.feed.motor[0].getCurrentPosition() * (Math.PI) / -8192 / 2;
+
+        double newTurretAngle = (turretAngleEncoderPosition - turretAngleEncoderOffset) % (2*Math.PI);
         if (resetTurretAngleEncoder) {
-            double turretAnalogEncoderVoltage = turretAnalogEncoder.getVoltage();
-            //TelemetryUtil.packet.put("Shooter : Turret analog encoder voltage", turretAnalogEncoderVoltage);
+
+            turretAnalogEncoderVoltage = turretAnalogEncoder.getVoltage();
             if (turretAnalogEncoderVoltage > 0.1) {
                 newTurretAngle = Utils.headingClip(RelativeEncoder.normalizeVoltage(turretAnalogEncoderVoltage) - Math.toRadians(turretAnalogEncoderOffsetDeg) - turretWrapMid) + turretWrapMid;
                 turretAngleEncoderOffset = turretAngleEncoderPosition - newTurretAngle;

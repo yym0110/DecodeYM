@@ -11,11 +11,10 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 
-@Disabled
 @TeleOp
 @Config
 public class AnalogInputTest extends LinearOpMode {
-    public static String encoderName = "analogInput0";
+    public static String encoderName = "turret_encoder";
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -26,8 +25,14 @@ public class AnalogInputTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            TelemetryUtil.packet.put("encoderValue", encoder.getVoltage() / 3.3 * 180);
-            robot.update();
+
+            TelemetryUtil.packet.put("encoderValue", encoder.getVoltage() / 3.3 * 360);
+            telemetry.addData("encoderValue", encoder.getVoltage() / 3.3 * 360);
+            telemetry.addData("quadatureEncoder", Math.toDegrees(robot.sensors.getTurretAngle()));
+            telemetry.update();
+
+            robot.sensors.update();
+            // robot.update();
         }
     }
 }

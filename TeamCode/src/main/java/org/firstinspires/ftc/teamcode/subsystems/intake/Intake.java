@@ -67,6 +67,7 @@ public class Intake {
         */
         robot.hardwareQueue.addDevices(roller, feed);
 
+        roller.motor[0].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         roller.motor[0].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         feed.motor[0].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }

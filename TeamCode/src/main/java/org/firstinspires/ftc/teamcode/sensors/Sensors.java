@@ -108,7 +108,7 @@ public class Sensors {
         ROBOT_VELOCITY = robot.drivetrain.mergeLocalizer.getRelativePoseVelocity();
         ROBOT_GLOBAL_VELOCITY = robot.drivetrain.mergeLocalizer.getGlobalVelocity();
 
-        if (currentTime - initialTime < 200_000_000) resetTurretAngleEncoder = true;
+        if (currentTime - initialTime < 400_000_000) resetTurretAngleEncoder = true;
         turretAngleEncoderPosition = robot.intake.feed.motor[0].getCurrentPosition() * (Math.PI) / -8192 / 2;
         double newTurretAngle = (turretAngleEncoderPosition - turretAngleEncoderOffset) % (2 * Math.PI);
         if (resetTurretAngleEncoder) {

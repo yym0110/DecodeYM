@@ -33,7 +33,7 @@ public class ShotTable {
         table.put(110.7, new ShotSetpoint(580, Math.toRadians(49.3)));
         table.put(122.7, new ShotSetpoint(607, Math.toRadians(49.6)));
         table.put(131.9, new ShotSetpoint(624, Math.toRadians(60.58)));
-        table.put(135.4, new ShotSetpoint(638, Math.toRadians(49.9)));
+        table.put(135.4, new ShotSetpoint(638, Math.toRadians(60.58)));
     }
 
     public void addSetpoint(double distanceInches, ShotSetpoint setpoint) {

@@ -447,6 +447,7 @@ public class Shooter {
         FAR(1.3, 610),
         OFF(0.0, 0.0);
 
+
         private final double hoodAngle, flywheelVel;
 
         Dist(double hoodAngle, double flywheelVel) {
@@ -578,6 +579,7 @@ public class Shooter {
             TelemetryUtil.packet.put("Aim : ballVelocity", ballVelocity);
             double g = 386.088; // in/s
             initialDist += 6;
+            minFlywheelVelocity = values.flywheelVel;
             double d = Math.pow(ballVelocity, 4) - g * (g * initialDist * initialDist + 2 * (ballTarget.z - launcherHeight) * ballVelocity * ballVelocity);
             TelemetryUtil.packet.put("Aim : d", d);
             if (d >= 0) {

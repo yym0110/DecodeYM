@@ -85,6 +85,17 @@ public class Robot {
     }
 
     /**
+     * Waits while a condition is true
+     * @param func the function to check
+     */
+    public void waitWhileWithTimeout(BooleanSupplier func, long duration) {
+        long start = System.currentTimeMillis();
+        do {
+            update();
+        } while (!this.stopChecker.getAsBoolean() && System.currentTimeMillis() - start < duration && func.getAsBoolean());
+    }
+
+    /**
      * Waits for a duration
      * @param duration the duration in milliseconds
      */

@@ -17,9 +17,9 @@ public class Turret {
     private final Robot robot;
     public final PriorityCRServo turret;
 
-    public static PID turretPID = new PID (0.3  , 0, 0.04);
-    public static PID finalAdjustPID = new PID (0.025, 0.02, 0.04);
-    public static double turretKStaticBig = 0.10;
+    public static PID turretPID = new PID (0.23  , 0, 0.02);
+    public static PID finalAdjustPID = new PID (0.2, 0.0, 0.004);
+    public static double turretKStaticBig = 0.11;
     public static double turretKStaticSmall = 0.08;
 
     public static double turretDeadzone = 2;

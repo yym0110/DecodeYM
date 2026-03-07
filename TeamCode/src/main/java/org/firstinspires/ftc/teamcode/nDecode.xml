@@ -6,6 +6,7 @@
             <goBILDA5202SeriesMotor name="feed" port="1" />
             <goBILDA5202SeriesMotor name="shooter1" port="2" />
             <goBILDA5202SeriesMotor name="shooter2" port="3" />
+            <ContinuousRotationServo name="park" port="5" />
             <DigitalDevice name="light0G" port="0" />
             <DigitalDevice name="light0P" port="1" />
         </LynxModule>
@@ -19,8 +20,8 @@
             <Servo name="hood1" port="3" />
             <Servo name="flywheelBlocker" port="5" />
             <AnalogInput name="turret_encoder" port="0" />
-            <AnalogInput name="lightSensor0" port="2" />
-            <goBILDAPinpoint name="pinpoint" port="0" bus="1" />
+            <AnalogInput name="lightSensor0" port="3" />
+            <goBILDAPinpoint name="pinpoint" port="0" bus="2" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>

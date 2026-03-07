@@ -16,7 +16,6 @@ import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LEDWrapper;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
-import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.RelativeEncoder;
@@ -124,8 +123,8 @@ public class Sensors {
         if (Globals.RUNMODE != RunMode.AUTO && currentTime - lastColorSensorUpdatedTime > colorSensorUpdateTime * 1e6) {
             double lightSensorRawVoltage = lightSensor0.getVoltage();
             lightSensorFilteredVoltage = lightSensorFilteredVoltage * (1 - lightSensorFilter) + lightSensorRawVoltage * lightSensorFilter;
-            isGreen = lightSensorFilteredVoltage > 0.01;
-            isPurple = !isGreen && lightSensorFilteredVoltage > 0.005;
+            isGreen = lightSensorFilteredVoltage > 0.004;
+            isPurple = !isGreen && lightSensorFilteredVoltage > 0.0015;
             light0G.set(isGreen);
             light0P.set(isPurple);
             TelemetryUtil.packet.put("Intake : Light Raw Voltage", lightSensorRawVoltage);
@@ -167,11 +166,11 @@ public class Sensors {
     private void updateTelemetry() {
         TelemetryUtil.packet.put("Sensors: Voltage", voltage);
 
-        TelemetryUtil.packet.put("Sensors : Flywheel Velocity (in/s)", flywheelVelocity);
-        TelemetryUtil.packet.put("Sensors : Turret Angle (deg)", Math.toDegrees(turretAngle));
-        TelemetryUtil.packet.put("Sensors : Hood Angle (deg)", Math.toDegrees(robot.shooter.hood.getCurrentAngle() / Shooter.hoodGearRatio + Shooter.hoodSweep));
+        TelemetryUtil.packet.put("Flywheel : Current Velocity (in/s)", flywheelVelocity);
+        TelemetryUtil.packet.put("Turret : Current angle (deg)", Math.toDegrees(turretAngle));
+        TelemetryUtil.packet.put("Shooter : Hood launch angle (deg)", Math.toDegrees(robot.shooter.hood.getCurrentAngle() / Shooter.hoodGearRatio + Shooter.hoodSweep));
 
-        TelemetryUtil.packet.put("Sensors : Ball Color", isPurple ? "purple" : isGreen ? "green" : "none");
+        TelemetryUtil.packet.put("Intake : Ball Color", isPurple ? "purple" : isGreen ? "green" : "none");
 
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
         DashboardUtil.drawRobot(fieldOverlay, ROBOT_POSITION, "#00ff00", turretAngle, "#00e000c0", robot.shooter.turret.getTargetAngle(), "#8000ff");

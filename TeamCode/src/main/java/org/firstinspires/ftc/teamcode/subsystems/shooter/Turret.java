@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.sensors.Sensors;
-import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.PID;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
@@ -22,7 +21,7 @@ public class Turret {
     public static double turretKStaticBig = 0.08;
     public static double turretKStaticSmall = 0.075;
 
-    public static double turretDeadzone = 2;
+    public static double turretDeadzoneDeg = 2;
     public static double inPositionThresh = Math.toRadians(3);
 
     public static double turretVelFactor = 0.2;
@@ -59,7 +58,7 @@ public class Turret {
         double turretError = targetTurretAngle - turretAngle;
         double turretPow = (Math.abs(turretError) > Math.toRadians(10) ? turretPID.update(turretError, -1, 1): finalAdjustPID.update(turretError, -0.5, 0.5));
 
-        if (Math.abs(turretError) < Math.toRadians(turretDeadzone)) {
+        if (Math.abs(turretError) < Math.toRadians(turretDeadzoneDeg)) {
             finalAdjustPID.resetIntegral();
             turretPow = 0;
         }

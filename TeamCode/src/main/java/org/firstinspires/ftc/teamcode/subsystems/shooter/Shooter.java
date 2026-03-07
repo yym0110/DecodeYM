@@ -15,7 +15,6 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Polynomial;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
-import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.firstinspires.ftc.teamcode.utils.Vector2;
@@ -230,7 +229,7 @@ public class Shooter {
         TelemetryUtil.packet.put("Shooter : state", this.state);
         TelemetryUtil.packet.put("Shooter : Balltarget", ballTarget.toString());
         TelemetryUtil.packet.put("Shooter : goal distance", Math.hypot(ROBOT_POSITION.x - robot.shooter.ballTarget.x, ROBOT_POSITION.y - robot.shooter.ballTarget.y));
-        TelemetryUtil.packet.put("Shooter : robot in Zone", isRobotInZone(0,0,-72,72,-72,-72) || isRobotInZone(48,0,72,24,72,-24));
+        //TelemetryUtil.packet.put("Shooter : robot in Zone", isRobotInZone(0,0,-72,72,-72,-72) || isRobotInZone(48,0,72,24,72,-24));
 
         /*
         TelemetryUtil.packet.put("Shooter : Robot Velocity", (this.V != null ? this.V.getMag() : 0));

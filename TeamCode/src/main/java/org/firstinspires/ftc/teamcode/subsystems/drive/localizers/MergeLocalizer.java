@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.Drivetrain;
 import org.firstinspires.ftc.teamcode.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Lerp;
+import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Utils;
@@ -95,11 +96,12 @@ public class MergeLocalizer extends Localizer {
             pinpoint.update();
 
             Pose2d globalPinpointEstimate = offsetPoseUsingGlobalDelta(lastPinpointMergePose, lastPinpointPose, new Pose2d(pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading()));
-            globalPinpointEstimate.x = Utils.minMaxClip(globalPinpointEstimate.x, -72 + 6.2, 72 - 6.2);
-            globalPinpointEstimate.y = Utils.minMaxClip(globalPinpointEstimate.y, -72 + 6.2, 72 - 6.2);
+            clipPoseToField(globalPinpointEstimate);
             lastPinpointPose = new Pose2d (pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading());
             currentPose = globalPinpointEstimate.clone();
             lastPinpointMergePose = globalPinpointEstimate.clone();
+        } else {
+            clipPoseToField(currentPose);
         }
 
         if (lastPinpointPose != null) {
@@ -184,6 +186,8 @@ public class MergeLocalizer extends Localizer {
 
                     numberOfTimesRelocalizedWithCamera++;
 
+                    if (Math.hypot(newPose.x - currentPose.x, newPose.y - currentPose.y) > 10) LogUtil.drivePositionReset = true;
+
                     TelemetryUtil.packet.put("Vision : estimatedCameraPose", estimatedCameraPose);
                     TelemetryUtil.packet.put("Vision : pastPose", interpolatedPastPose);
                     TelemetryUtil.packet.put("Vision : newPose", newPose);
@@ -191,7 +195,7 @@ public class MergeLocalizer extends Localizer {
                     Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
                     DashboardUtil.drawRobot(fieldOverlay, interpolatedPastPose, "#ff8000", 1);
                     DashboardUtil.drawRobot(fieldOverlay, newPose, "#0000ff", 4);
-                    DashboardUtil.drawRobot(fieldOverlay, estimatedCameraPose, "#90d5ff", 2);
+                    DashboardUtil.drawRobot(fieldOverlay, estimatedCameraPose, "#000000", 2);
                 }
             }
         }
@@ -230,6 +234,11 @@ public class MergeLocalizer extends Localizer {
         );
     }
 
+    private void clipPoseToField(Pose2d pose) {
+        pose.x = Utils.minMaxClip(pose.x, -72 + 6.2, 72 - 6.2);
+        pose.y = Utils.minMaxClip(pose.y, -72 + 6.2, 72 - 6.2);
+    }
+
     public void setPoseEstimate(Pose2d pose) {
         super.setPoseEstimate(pose);
         pinpoint.setPosition(new Pose2D (DistanceUnit.INCH, pose.x, pose.y, AngleUnit.RADIANS, pose.heading));
@@ -261,15 +270,11 @@ public class MergeLocalizer extends Localizer {
         TelemetryUtil.packet.put("Vision y", estimatedCameraPose != null ? estimatedCameraPose.y : "na");
         TelemetryUtil.packet.put("Vision heading", estimatedCameraPose != null ? estimatedCameraPose.heading : "na");
 
-        TelemetryUtil.packet.put("Use Vision", useCamera);
-        TelemetryUtil.packet.put("Number of times Relocalized with Camera", numberOfTimesRelocalizedWithCamera);
+        TelemetryUtil.packet.put("Vision : useCamera", useCamera);
+        TelemetryUtil.packet.put("Vision : relocalize count", numberOfTimesRelocalizedWithCamera);
 
         Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
         DashboardUtil.drawRobot(fieldOverlay, currentPose, this.color); // blue
-
-        if (estimatedCameraPose != null) {
-            DashboardUtil.drawRobot(fieldOverlay, estimatedCameraPose, "#000000"); // black
-        }
         DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
     }
 }

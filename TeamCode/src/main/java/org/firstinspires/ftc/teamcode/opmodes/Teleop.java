@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drive.localizers.MergeLocalizer;
+import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
 import org.firstinspires.ftc.teamcode.utils.ButtonToggle;
 import org.firstinspires.ftc.teamcode.utils.Globals;
@@ -62,7 +63,6 @@ public class Teleop extends LinearOpMode {
         ButtonToggle guide2 = new ButtonToggle();
 
         boolean intakeReversed = false;
-        boolean intakeOn = false;
         boolean flywheelOn = false;
         boolean atSpeedRumble = false;
         boolean confirmation = true;
@@ -101,6 +101,7 @@ public class Teleop extends LinearOpMode {
 
             // INTAKE
 
+            /*
             if (lb1.isClicked(gamepad1.left_bumper)) {
                 intakeOn = !intakeOn;
                 intakeReversed = false;
@@ -112,9 +113,16 @@ public class Teleop extends LinearOpMode {
                 robot.intake.setRollerDirection(false);
             }
 
+             */
+
+            if (lb1.isClicked(gamepad1.left_bumper)) {
+                if (robot.intake.state == Intake.State.IDLE) robot.intake.reqIntake(true);
+                else robot.intake.reqOff(true);
+                robot.intake.setRollerDirection(false);
+            }
+
             if (a1.isClicked(gamepad1.a && !gamepad1.start)) {
-                intakeReversed = !intakeOn || !intakeReversed;
-                intakeOn = true;
+                intakeReversed = robot.intake.state == Intake.State.IDLE || !intakeReversed;
                 robot.intake.reqIntake(true);
                 robot.intake.setRollerDirection(intakeReversed);
             }
@@ -192,7 +200,6 @@ public class Teleop extends LinearOpMode {
                     robot.intake.reqShoot(true);
                 } else if (rb1.isReleased(gamepad1.right_bumper)) {
                     robot.shooter.setShooterBlocker(true);
-                    intakeOn = false;
                     robot.intake.reqOff(true);
                 }
             } else {
@@ -227,10 +234,6 @@ public class Teleop extends LinearOpMode {
                 if (lt1.isClicked(gamepad1.left_trigger > triggerThresh) || b1.isClicked(gamepad1.b)) {
                     robot.shooter.reqStop(true);
                 }
-                if (rt1.isClicked(gamepad1.right_trigger > triggerThresh)) {
-                    robot.shooter.reqStop(true);
-                    robot.shooter.reqAim(true);
-                }
             }
 
             // LOCALIZER
@@ -262,13 +265,23 @@ public class Teleop extends LinearOpMode {
 
              */
 
-            if(gamepad2.right_bumper) {
+            if (gamepad2.right_bumper) {
                 MergeLocalizer.useCamera = true;
                 Log.i("Vision", String.valueOf(MergeLocalizer.useCamera));
             } else {
                 MergeLocalizer.useCamera = false;
                 Log.i("Vision", String.valueOf(MergeLocalizer.useCamera));
+            }
 
+            if (lb2.isClicked(gamepad2.left_bumper)) {
+                Shooter.autoShootIfInZone = !Shooter.autoShootIfInZone;
+                if (Shooter.autoShootIfInZone) {
+                    gamepad1.rumble(250);
+                    gamepad2.rumble(250);
+                } else {
+                    gamepad1.rumble(100);
+                    gamepad2.rumble(100);
+                }
             }
 
             if (h2.isClicked(gamepad2.dpad_left || gamepad2.dpad_right)) { // localize to left/right edge (unchanged x, auto y, auto h)
@@ -336,6 +349,8 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("flywheelOn", flywheelOn);
             telemetry.addData("flywheelAtVel", robot.shooter.atVel());
             telemetry.addData("turretInPosition", robot.shooter.turret.inPosition() ? "yes" : "aw no its not happy yet");
+            telemetry.addData("Shooter auto shoot when in zone", Shooter.autoShootIfInZone);
+
             telemetry.addData("Robot position (deg)", String.format(Locale.US, "(%.2f, %.2f, %.2f)", ROBOT_POSITION.x, ROBOT_POSITION.y, Math.toDegrees(ROBOT_POSITION.heading)));
             telemetry.addData("CAT", LogUtil.DISABLED ? "DISABLED" : "ENABLED");
             telemetry.addData("Vision : relocalize count", robot.drivetrain.mergeLocalizer.numberOfTimesRelocalizedWithCamera);

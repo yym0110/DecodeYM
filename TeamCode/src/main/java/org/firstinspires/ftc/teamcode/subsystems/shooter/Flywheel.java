@@ -34,8 +34,8 @@ public class Flywheel {
      */
 
     // velocity is in inches / second
-    public static PID velocityPID = new PID (0.01, 0.0003, 0.0001);
-    public static double velocityFFm = 0.00124059;
+    public static PID velocityPID = new PID (0.03, 0.0005, 0.0001);
+    public static double velocityFFm = 0.00124059; // [* 20 / 14 for belt ratio]
     public static double velocityFFb = 0.0264087;
     public static double velocityFilterLow = 0.05;
     public static double velocityFilterHigh = 0.5;
@@ -92,4 +92,5 @@ public class Flywheel {
     public double getFilteredVelocity() { return filteredVelocity; }
 
     public boolean atVel() { return Math.abs(targetVelocity - filteredVelocity) <= atVelThresh; }
+    public boolean atVel(double thresh) { return Math.abs(targetVelocity - filteredVelocity) <= thresh; }
 }

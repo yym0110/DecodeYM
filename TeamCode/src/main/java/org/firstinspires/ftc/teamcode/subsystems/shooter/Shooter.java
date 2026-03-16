@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.LogUtil;
 import org.firstinspires.ftc.teamcode.utils.Polynomial;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
+import org.firstinspires.ftc.teamcode.utils.RunMode;
 import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.firstinspires.ftc.teamcode.utils.Vector3;
@@ -72,6 +73,9 @@ public class Shooter {
     public static double ballInterpolateZFar = 45;
 
     public static double SOTMThreshold = 10;
+    public static double flywheelThresh = 50;
+
+    public static boolean autoShootIfInZone = false;
 
     /*
     (-71, 48)
@@ -156,6 +160,10 @@ public class Shooter {
                 break;
             }
             case READY: {
+                if (!this.atVel(flywheelThresh) && Globals.RUNMODE == RunMode.TELEOP) {
+                    state = State.AIMING;
+                }
+
                 setShooterBlocker(true);
 
                 predictGoal2AxisInterpolate();
@@ -171,15 +179,25 @@ public class Shooter {
                     }
                 }
 
+                if (autoShootIfInZone && isRobotInZone()) {
+                    Log.i("Shooter", "Auto Shot");
+                    setShooterBlocker(false);
+                    if (flywheelBlocker.inPosition()) {
+                        state = State.SHOOT;
+                        robot.intake.reqShoot(true);
+                    }
+                }
+
                 if (stopRequest) {
                     stopRequest = false;
                     shootRequest = false;
-                    flywheel.setTargetVelocity(0.0);
+                    flywheel.setTargetVelocity(Dist.CLOSE.flywheelVel);
                     robot.intake.reqShoot(false);
                     robot.intake.reqOff(true);
 
                     state = State.IDLE;
                 }
+
                 break;
             }
             case SHOOT: {
@@ -193,15 +211,14 @@ public class Shooter {
                     stopRequest = false;
                     shootRequest = false;
                     state = State.IDLE;
-                    flywheel.setTargetVelocity(0.0);
+                    flywheel.setTargetVelocity(Dist.CLOSE.flywheelVel);
                     robot.intake.reqShoot(false);
                     robot.intake.reqOff(true);
-                } /*else if (!isRobotInZone(0,0,-72,72,-72,-72) && !isRobotInZone(48,0,72,24,72,-24)) {
+                } else if (autoShootIfInZone && !isRobotInZone()) {
                     state = State.AIMING;
                     robot.intake.reqShoot(false);
-                    robot.intake.reqIntake(true);
-                    robot.intake.setRollerDirection(false);
-                }*/
+                    robot.intake.reqOff(true);
+                }
                 break;
             }
             case TEST: {
@@ -300,7 +317,6 @@ public class Shooter {
         Vector3 P;
         if (ROBOT_POSITION.x + 48 >= ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) P = new Vector3(ballTarget);
         else P = new Vector3(ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.x * (Globals.isRed ? -1 : 1), ballTarget.z); // invert target along y = x or y = -x
-        //P.subtract(new Vector3(ROBOT_POSITION.x, ROBOT_POSITION.y, launcherHeight));
         this.P = P;
 
         return P;
@@ -448,6 +464,7 @@ public class Shooter {
     }
 
     public boolean atVel() { return flywheel.atVel(); }
+    public boolean atVel(double thresh) { return flywheel.atVel(thresh); }
 
     // further separation :)
     // bootleg LM1 strat being used in LM2 & LM3 code
@@ -471,6 +488,10 @@ public class Shooter {
     public void setShooter(Dist mode) {
         flywheel.setTargetVelocity(mode.flywheelVel);
         setHoodAngle(targetHoodAngle = mode.hoodAngle);
+    }
+
+    public static boolean isRobotInZone() {
+        return isRobotInZone(-2,0,-72,70,-72,-70) || isRobotInZone(50,0,72,22,72,-22);
     }
 
     public static boolean isRobotInZone(double x1, double y1, double x2, double y2, double x3, double y3) {
@@ -513,8 +534,8 @@ public class Shooter {
     }
 
     public void predictGoal2AxisInterpolate() {
-        //ballTarget = new Vector3(-67, 69 * (Globals.isRed ? 1 : -1), 45);
-        ballTarget = turretTrackTargetPos();
+        ballTarget = new Vector3(-67, 69 * (Globals.isRed ? 1 : -1), 45);
+        //ballTarget = turretTrackTargetPos();
         double currFlywheelVel = flywheel.getFilteredVelocity();
 
         double initialDist = Math.hypot(ballTarget.x - ROBOT_POSITION.x, ballTarget.y - ROBOT_POSITION.y);

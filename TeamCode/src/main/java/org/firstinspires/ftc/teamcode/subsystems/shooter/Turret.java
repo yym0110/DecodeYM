@@ -15,9 +15,6 @@ import org.firstinspires.ftc.teamcode.utils.priority.nPriorityServo;
 public class Turret {
     private final Robot robot;
     public final nPriorityServo turret;
-
-
-
     private double lastTurretTarget = 0.0;
     private double targetTurretAngle = 0.0;
     private double targetTurretAngleVel = 0.0;

@@ -101,20 +101,6 @@ public class Teleop extends LinearOpMode {
 
             // INTAKE
 
-            /*
-            if (lb1.isClicked(gamepad1.left_bumper)) {
-                intakeOn = !intakeOn;
-                intakeReversed = false;
-                if (intakeOn) {
-                    robot.intake.reqIntake(true);
-                } else {
-                    robot.intake.reqOff(true);
-                }
-                robot.intake.setRollerDirection(false);
-            }
-
-             */
-
             if (lb1.isClicked(gamepad1.left_bumper)) {
                 if (robot.intake.state == Intake.State.IDLE) robot.intake.reqIntake(true);
                 else robot.intake.reqOff(true);
@@ -149,12 +135,6 @@ public class Teleop extends LinearOpMode {
                 gamepad1.rumble(500);
                 gamepad2.rumble(500);
             }
-
-            /*if (x2.isClicked(gamepad2.x)) {
-                Sensors.resetTurretAngleEncoder = true;
-                gamepad1.rumble(50);
-                gamepad2.rumble(50);
-            }*/
 
             if (robot.shooter.state == Shooter.State.TEST) {
                 rb1.isClicked(gamepad1.right_bumper);
@@ -203,6 +183,17 @@ public class Teleop extends LinearOpMode {
                     robot.intake.reqOff(true);
                 }
             } else {
+
+                if(gamepad2.right_bumper) {
+                    Shooter.forceUpdateVelBool = true;
+                    Shooter.forceUpdateVel = 580;
+                } else if(gamepad2.right_bumper) {
+                    Shooter.forceUpdateVelBool = true;
+                    Shooter.forceUpdateVel = 500;
+                } else {
+                    Shooter.forceUpdateVelBool = false;
+
+                }
                 x1.isClicked(gamepad1.x);
 
                 if (y1.isClicked(gamepad1.y)) {
@@ -244,12 +235,6 @@ public class Teleop extends LinearOpMode {
                 gamepad2.rumble(1200);
             }
 
-            /*if (back1.isClicked(gamepad1.back)) { // turret encoder
-                Sensors.resetTurretAngleEncoder = true;
-                gamepad1.rumble(200);
-                gamepad2.rumble(200);
-            }*/
-
             /*
 
             if (guide2.isClicked(gamepad2.guide)) { // camera
@@ -265,6 +250,8 @@ public class Teleop extends LinearOpMode {
 
              */
 
+            /*
+
             if (gamepad2.right_bumper) {
                 MergeLocalizer.useCamera = true;
                 Log.i("Vision", String.valueOf(MergeLocalizer.useCamera));
@@ -272,6 +259,11 @@ public class Teleop extends LinearOpMode {
                 MergeLocalizer.useCamera = false;
                 Log.i("Vision", String.valueOf(MergeLocalizer.useCamera));
             }
+
+
+             */
+
+            /*
 
             if (lb2.isClicked(gamepad2.left_bumper)) {
                 Shooter.autoShootIfInZone = !Shooter.autoShootIfInZone;
@@ -283,6 +275,8 @@ public class Teleop extends LinearOpMode {
                     gamepad2.rumble(100);
                 }
             }
+
+             */
 
             if (h2.isClicked(gamepad2.dpad_left || gamepad2.dpad_right)) { // localize to left/right edge (unchanged x, auto y, auto h)
                 double h = Utils.headingClip(ROBOT_POSITION.heading);

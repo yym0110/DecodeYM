@@ -6,8 +6,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.RunMode;
-import org.firstinspires.ftc.teamcode.utils.TelemetryUtil;
 import org.firstinspires.ftc.teamcode.utils.Utils;
+import com.qualcomm.robotcore.hardware.PwmControl;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 public class nPriorityServo extends PriorityDevice {
     public enum ServoType {
@@ -16,7 +17,7 @@ public class nPriorityServo extends PriorityDevice {
         SPEED(0.2162104887, Math.toRadians(60) / 0.11),
         SUPER_SPEED(0.2162104887, Math.toRadians(60) / 0.055),
         AXON_MINI(1 / Math.toRadians(305), 5.3403953024772129),
-        AXON_MINI_EXTENDED(1 / Math.toRadians(322), 5), // Experimentally found
+        AXON_MINI_EXTENDED(1 / Math.toRadians(355), 5), // Experimentally found
         AXON_MAX(0.1775562245447108, 6.5830247235911042),
         AXON_MICRO(0.1775562245447108, 6.5830247235911042),  // TODO need to tune
         AMAZON(0.2122065908, Math.toRadians(60) / 0.13),
@@ -72,6 +73,14 @@ public class nPriorityServo extends PriorityDevice {
             servos[0].setPosition(0.0);
             servos[0].setPosition(basePos);
         }
+
+        for (Servo s : servos) {
+            if (s instanceof ServoImplEx) {
+                ((ServoImplEx) s).setPwmRange(new PwmControl.PwmRange(400, 2600));
+            }
+        }
+
+
     }
 
     private double convertPosToAngle(double pos) {

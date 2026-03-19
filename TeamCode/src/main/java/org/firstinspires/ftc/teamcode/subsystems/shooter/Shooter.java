@@ -70,8 +70,8 @@ public class Shooter {
     public static double ballInterpolateZCloseB = 44;
     public static double ballInterpolateZCloseS = 40;
     public static double ballInterpolateZFar = 45;
-    public static double ballInterpolateYFar = 67;
-    public static double ballInterpolateXFar = -60;
+    public static double ballInterpolateYFar = 66;
+    public static double ballInterpolateXFar = -70;
 
     public static double SOTMThreshold = 10;
     public static double flywheelThresh = 50;

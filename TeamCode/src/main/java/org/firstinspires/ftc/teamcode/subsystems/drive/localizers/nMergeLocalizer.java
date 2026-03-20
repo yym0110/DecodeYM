@@ -32,6 +32,8 @@ public class nMergeLocalizer extends Localizer {
     public static boolean useOdometry = true;
     public static boolean useCamera = true;
 
+    private Pose2d lastPinpointCorrectedPose = null;
+
     public static double pinpointPollDist = 12;
 
     // EKF
@@ -109,11 +111,23 @@ public class nMergeLocalizer extends Localizer {
         }
 
         // EKF UPDATE — PINPOINT
-        if ((usePinpoint && currentPose.getDistanceFromPoint(ekf.getPose()) >= pinpointPollDist) || constantCorrection) {
+        if (lastPinpointCorrectedPose != null) {
+            if ((usePinpoint && currentPose.getDistanceFromPoint(lastPinpointCorrectedPose) >= pinpointPollDist) || constantCorrection) {
+                Log.i("Localization Test", "pinpoint in use");
+                pinpoint.update();
+                ekf.updatePinpoint(pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading());
+
+                lastPinpointCorrectedPose = currentPose.clone();
+
+            }
+        } else {
             Log.i("Localization Test", "pinpoint in use");
             pinpoint.update();
             ekf.updatePinpoint(pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading());
+
+            lastPinpointCorrectedPose = currentPose;
         }
+
 
         if (usePinpoint) {
             Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
@@ -200,6 +214,7 @@ public class nMergeLocalizer extends Localizer {
         super.setPoseEstimate(pose);
         ekf.resetPose(pose);
         pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, pose.x, pose.y, AngleUnit.RADIANS, pose.heading));
+        lastPinpointCorrectedPose = pose.clone();
         estimatedCameraPose = null;
         consecutiveFrames   = 0;
     }

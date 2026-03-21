@@ -36,7 +36,7 @@ public class GVFTester extends LinearOpMode {
         } while (opModeInInit());
 
         Path path = new Path(Globals.ROBOT_POSITION.clone())
-                .addPoint(new Pose2d(48, 48, Math.PI / 2), false, true);
+                .addPoint(new Pose2d(48, 48, Math.PI/2), false, true);
         robot.drivetrain.setPath(path);
         robot.update();
         robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);

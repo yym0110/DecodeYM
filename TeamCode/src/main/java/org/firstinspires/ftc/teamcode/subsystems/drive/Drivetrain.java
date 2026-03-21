@@ -163,17 +163,17 @@ public class Drivetrain {
     int lastSegmentIndex;
     public PathData data;
     private Vector2 moveVector = new Vector2(0, 0);
-    private double turnPow = 0;
+    private double turnPow = 0, lastGVFTime = 0.0;
 
     // TODO: Tune these values
-    public static double correctScalar = 5.0, decelThresh = 24.0;
+    public static double correctScalar = 5.5, rotScalar = 1.15, decelThresh = 36.0;
 
     private Pose2d targetPoint = new Pose2d (0, 0, 0);
-    public static PID xPID = new PID (0.02, 0.0, 0.005);
-    public static PID yPID = new PID (0.02, 0.0, 0.005);
-    public static PID turnPID = new PID (0.08, 0.0, 0.005);
-    public static PID hPID = new PID (1.5, 0.0, 0.0);
-    public static double turnKStatic = 0.0, strafeScalar = 1.0;
+    public static PID xPID = new PID (0.4, 0.0, 0.007);
+    public static PID yPID = new PID (0.4, 0.0, 0.007);
+    public static PID turnPID = new PID (0.4, 0.0, 0.002);
+    public static PID hPID = new PID (0.53, 0.0, 0.0);
+    public static double turnKStatic = 0.15;
     public static double xThresh = 1.5, yThresh = 1.5, hThresh = Math.toRadians(2.5), waypointThresh = 3.0;
     public static double xError = 0.0, yError = 0.0, hError = 0.0;
 
@@ -194,6 +194,7 @@ public class Drivetrain {
                 if (data == null) {
                     targetPoint = path.getLastPose();
                     maxPower = 0.8;
+                    lastGVFTime = System.currentTimeMillis();
                     path = null;
                     state = State.PID_TO_POINT;
                     break;
@@ -214,6 +215,11 @@ public class Drivetrain {
                 Vector2 correct = new Vector2(0, traverse.mag() * traverse.mag() / data.radius * correctScalar);
                 correct.rotate(Math.atan2(traverse.y, traverse.x));
 
+                // Only scale the traverse part of moveVector bc correction should remain true to curr velocity
+                if (data.decel && ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) < decelThresh) {
+                    traverse.mul(Math.pow(Math.E, (ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) * 0.25)));
+                }
+
                 moveVector = Vector2.add(traverse, correct);
                 moveVector.rotate(-ROBOT_POSITION.heading);
                 double mag = moveVector.mag();
@@ -225,14 +231,9 @@ public class Drivetrain {
                 }
 
                 double targetHeading = Math.atan2(traverse.y, traverse.x) + (data.reversed ? Math.PI : 0);
-                turnPow = pathRot + hPID.update(targetHeading - ROBOT_POSITION.heading, -1.0, 1.0);
+                turnPow = pathRot * rotScalar + hPID.update(targetHeading - ROBOT_POSITION.heading, -1.0, 1.0);
 
-                // Tune decel split to be a smoother transition into PID to point
-                if (data.decel & ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) < decelThresh) {
-                    moveVector.mul(0.3 * Math.sqrt(ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) / decelThresh));
-                }
                 moveVector.mul(data.power);
-
                 setMoveVector(moveVector, turnPow);
                 break;
             case PID_TO_POINT:
@@ -286,15 +287,15 @@ public class Drivetrain {
 
     private void PIDF() {
         fwd = xPID.update(xError, -maxPower, maxPower);
-        strafe = yPID.update(yError, -maxPower, maxPower) * strafeScalar;
+        strafe = yPID.update(yError, -maxPower, maxPower);
         h = turnPID.update(hError, -maxPower, maxPower);
         if (hError > hThresh) h += turnKStatic;
         if (hError < -hThresh) h -= turnKStatic;
 
         setMinPowersToOvercomeFriction(1.0);
 
-        Vector2 move = new Vector2(fwd, strafe);
-        setMoveVector(move, h);
+        Vector2 move = new Vector2(fwd + moveVector.x * Math.pow(Math.E, -1 * (System.currentTimeMillis() - lastGVFTime)), strafe + moveVector.y * Math.pow(Math.E, -1 * (System.currentTimeMillis() - lastGVFTime)));
+        setMoveVector(move, h + turnPow * Math.pow(Math.E, -1 * (System.currentTimeMillis() - lastGVFTime)));
     }
 
     private boolean atPoint() {
@@ -401,6 +402,10 @@ public class Drivetrain {
         TelemetryUtil.packet.put("Drivetrain : PID xError", xError);
         TelemetryUtil.packet.put("Drivetrain : PID yError", yError);
         TelemetryUtil.packet.put("Drivetrain : PID hError", hError);
+
+        TelemetryUtil.packet.put("Drivetrain : PID xPow", fwd);
+        TelemetryUtil.packet.put("Drivetrain : PID yPow", strafe);
+        TelemetryUtil.packet.put("Drivetrain : PID hPow", h);
 
         LogUtil.driveState.set(state.toString());
 

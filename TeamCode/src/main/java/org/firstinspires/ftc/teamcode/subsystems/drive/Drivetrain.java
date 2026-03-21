@@ -166,15 +166,16 @@ public class Drivetrain {
     private double turnPow = 0;
 
     // TODO: Tune these values
-    public static double correctScalar = 1.0, decelThresh = 16.0;
+    public static double correctScalar = 5.0, decelThresh = 24.0;
 
     private Pose2d targetPoint = new Pose2d (0, 0, 0);
-    public static PID xPID = new PID (0.05, 0.0, 0.005);
-    public static PID yPID = new PID (0.1, 0.0, 0.003);
-    public static PID turnPID = new PID (0.2, 0.0, 0);
-    public static double turnKStatic = 0.35, strafeScalar = 1.2;
+    public static PID xPID = new PID (0.02, 0.0, 0.005);
+    public static PID yPID = new PID (0.02, 0.0, 0.005);
+    public static PID turnPID = new PID (0.08, 0.0, 0.005);
+    public static PID hPID = new PID (1.5, 0.0, 0.0);
+    public static double turnKStatic = 0.0, strafeScalar = 1.0;
     public static double xThresh = 1.5, yThresh = 1.5, hThresh = Math.toRadians(2.5), waypointThresh = 3.0;
-    private double xError = 0.0, yError = 0.0, hError = 0.0;
+    public static double xError = 0.0, yError = 0.0, hError = 0.0;
 
     public void update() {
         if (!DRIVETRAIN_ENABLED) {
@@ -192,7 +193,7 @@ public class Drivetrain {
                 // Null data indicates the end of path has been reached
                 if (data == null) {
                     targetPoint = path.getLastPose();
-                    maxPower = 0.6;
+                    maxPower = 0.8;
                     path = null;
                     state = State.PID_TO_POINT;
                     break;
@@ -224,11 +225,11 @@ public class Drivetrain {
                 }
 
                 double targetHeading = Math.atan2(traverse.y, traverse.x) + (data.reversed ? Math.PI : 0);
-                turnPow = pathRot + turnPID.update(targetHeading - ROBOT_POSITION.heading, -0.8, 0.8);
+                turnPow = pathRot + hPID.update(targetHeading - ROBOT_POSITION.heading, -1.0, 1.0);
 
                 // Tune decel split to be a smoother transition into PID to point
                 if (data.decel & ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) < decelThresh) {
-                    moveVector.mul(0.2 + 0.6 * Math.sqrt(ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) / decelThresh));
+                    moveVector.mul(0.3 * Math.sqrt(ROBOT_POSITION.getDistanceFromPoint(path.getSegLast(data.index)) / decelThresh));
                 }
                 moveVector.mul(data.power);
 
@@ -394,10 +395,12 @@ public class Drivetrain {
     public void updateTelemetry() {
         TelemetryUtil.packet.put("Drivetrain : state", state);
 
+
+
 //        TelemetryUtil.packet.put("Drivetrain : TargetPoint", "(" + targetPoint.x + ", " + targetPoint.y + ", " + targetPoint.heading + ")");
-//        TelemetryUtil.packet.put("Drivetrain : PID xError", xError);
-//        TelemetryUtil.packet.put("Drivetrain : PID yError", yError);
-//        TelemetryUtil.packet.put("Drivetrain : PID hError", hError);
+        TelemetryUtil.packet.put("Drivetrain : PID xError", xError);
+        TelemetryUtil.packet.put("Drivetrain : PID yError", yError);
+        TelemetryUtil.packet.put("Drivetrain : PID hError", hError);
 
         LogUtil.driveState.set(state.toString());
 

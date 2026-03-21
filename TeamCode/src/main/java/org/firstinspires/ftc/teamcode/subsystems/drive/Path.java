@@ -104,7 +104,7 @@ public class Path {
 
     public Pose2d getLastPose() { return lastPose.clone(); }
 
-    public static double k_p = 0.200; // 1 / 5 (i.e. corrective vector will become relevant after 5 inches of error)
+    public static double k_p = 0.3333; // 1 / 3 (i.e. corrective vector will become relevant after 3 inches of error)
 
     // Multiply both v_p & v_r my v_t.mag() to normalize the two vectors to the current spline segment. otherwise, they are operating on different arbitrary time units
     private GuidingVectors calculate(PathSegment currSegment, Pose2d robot) {
@@ -128,7 +128,7 @@ public class Path {
     }
 
     private int lastIndex = 0;
-    private double proceedThresh = 0.95;
+    private double proceedThresh = 0.96;
 
     public PathData update(Pose2d robot) {
         int index = lastIndex;
@@ -136,7 +136,10 @@ public class Path {
             index++;
         }
 
-        if (index == segments.size()) return null;
+        if (index == segments.size()){
+            Log.i("GVF", "TRANSITION");
+            return null;
+        }
 
         lastIndex = index;
 
@@ -177,7 +180,7 @@ public class Path {
                 segments.get(index).decel,
                 index);
 
-        Log.i("GVF", pd.toString());
+        Log.i("GVF", robot.toString() + ", " + pd.toString());
 
         return pd;
     }

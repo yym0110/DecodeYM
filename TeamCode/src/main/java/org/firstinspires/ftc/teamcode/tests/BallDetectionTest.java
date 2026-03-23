@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 
 import java.util.ArrayList;
 
-@TeleOp
+@TeleOp(group = "Test")
 public class BallDetectionTest extends LinearOpMode {
     BallDetection b;
 

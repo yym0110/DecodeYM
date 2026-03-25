@@ -33,7 +33,7 @@ public class RobotEKF {
     public static double pinpointRX = 0.01, pinpointRY = 0.01, pinpointRT = 0.05;
     public static double odoRX = 0.1, odoRY = 0.1, odoRT = 0.05;
 
-    ConstantAccelMath constAccelMath;
+    ConstantAccelMath constAccelMath = new ConstantAccelMath();
 
 
 
@@ -55,13 +55,18 @@ public class RobotEKF {
     //prediction phase of kalman filter
     public void predict(double dX, double dY, double dTheta) {
         Pose2d relDelta = new Pose2d(dX,dY,dTheta);
-        Pose2d currPose = getPose().clone();
-        constAccelMath.calculate(Globals.LOOP_TIME, relDelta, currPose);
+        Pose2d currPose = new Pose2d(x,y,theta);
+        Pose2d predictionPose = currPose.clone();
+
+        if(relDelta != null && predictionPose != null && Globals.LOOP_TIME > 0.00000001 && !Double.isNaN(Globals.LOOP_TIME)) {
+
+            constAccelMath.calculate(Globals.LOOP_TIME, relDelta, predictionPose);
+        }
 
         //rotation to global
-        x     += currPose.x - x;
-        y     += currPose.y - y;
-        theta += currPose.heading - theta;
+        x     = predictionPose.x;
+        y     = predictionPose.y;
+        theta = predictionPose.heading;
         add3x3(P, Q);
     }
 

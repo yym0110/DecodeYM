@@ -125,7 +125,7 @@ public class BallDetection {
     public Vector2 getBestBall() {
 
         this.update();
-        double[] w = getWeights(this.ballPoses);
+        double[] w = this.getWeights(this.ballPoses);
 
         if (ballPoses.size() == 0) {
             return null;

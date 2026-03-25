@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive.localizers;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.google.ar.core.Pose;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.utils.Globals;
 import org.firstinspires.ftc.teamcode.utils.Pose2d;
 
 /*
@@ -31,6 +33,8 @@ public class RobotEKF {
     public static double pinpointRX = 0.01, pinpointRY = 0.01, pinpointRT = 0.05;
     public static double odoRX = 0.1, odoRY = 0.1, odoRT = 0.05;
 
+    ConstantAccelMath constAccelMath;
+
 
 
     public RobotEKF(Pose2d startPose, double qX, double qY, double qTheta) {
@@ -50,14 +54,14 @@ public class RobotEKF {
 
     //prediction phase of kalman filter
     public void predict(double dX, double dY, double dTheta) {
-        double cosH = Math.cos(theta);
-        double sinH = Math.sin(theta);
+        Pose2d relDelta = new Pose2d(dX,dY,dTheta);
+        Pose2d currPose = getPose().clone();
+        constAccelMath.calculate(Globals.LOOP_TIME, relDelta, currPose);
 
         //rotation to global
-        x     += cosH * dX - sinH * dY;
-        y     += sinH * dX + cosH * dY;
-        theta += dTheta;
-        theta  = AngleUnit.normalizeRadians(theta);
+        x     += currPose.x - x;
+        y     += currPose.y - y;
+        theta += currPose.heading - theta;
         add3x3(P, Q);
     }
 

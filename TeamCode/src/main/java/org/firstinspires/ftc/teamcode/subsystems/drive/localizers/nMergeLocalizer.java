@@ -93,7 +93,6 @@ public class nMergeLocalizer extends Localizer {
         distanceTraveled += Math.sqrt(relDeltaX * relDeltaX + relDeltaY * relDeltaY);
 
         Pose2d relDelta = new Pose2d(relDeltaX, relDeltaY, deltaHeading);
-        constAccelMath.calculate(loopTime, relDelta, currentPose);
 
         // EKF PREDICT
         ekf.predict(relDeltaX,relDeltaY,deltaHeading);

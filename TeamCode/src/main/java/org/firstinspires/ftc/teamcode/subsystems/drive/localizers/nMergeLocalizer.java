@@ -105,18 +105,20 @@
 
             if (usePinpoint && (currentTimeNanos - lastPinpointPollNanos >= pinpointPollGapMs * 1000_000 || constantCorrection)) {
                 //Log.i("Localization Test", "pinpoint in use");
+                pinpoint.update();
                 px = pinpoint.getPosX();
                 py = pinpoint.getPosY();
                 pt = pinpoint.getHeading();
                 Pose2d currpinpoint = new Pose2d(px,py,pt);
                 Pose2d newpinpoint = MergeLocalizer.offsetPoseUsingGlobalDelta(pastPose, lastPinpointPose, currpinpoint);
-                if (Math.hypot(px - ekf.getX(), py - ekf.getY()) > pinpointResetDist && consecutiveFrames == 0 ) {
+                if (consecutiveFrames == 0 && Math.hypot(px - ekf.getX(), py - ekf.getY()) > pinpointResetDist) {
+                    Log.i("Localization Test", "ERROR IS TERRIBLE LOCK IN ASAP");
                     ekf.resetPose(new Pose2d(newpinpoint.x, newpinpoint.y, newpinpoint.heading));
                 } else {
                     ekf.updatePinpoint(newpinpoint.x, newpinpoint.y, newpinpoint.heading);
                 }
                 lastPinpointPose = currpinpoint.clone();
-                pastPose = ekf.getPose()
+                pastPose = ekf.getPose();
                 lastPinpointPollNanos = currentTimeNanos;
                 Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
                 DashboardUtil.drawRobot(fieldOverlay, new Pose2d(newpinpoint.x, newpinpoint.y, newpinpoint.heading), this.expectedColor);

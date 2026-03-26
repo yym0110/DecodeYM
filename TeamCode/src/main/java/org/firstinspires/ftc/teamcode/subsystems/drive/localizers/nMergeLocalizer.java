@@ -32,7 +32,7 @@
         public static boolean usePinpoint = true;
         public static boolean useCamera = true;
 
-        private Pose2d lastPinpointPose;
+        private Pose2d lastPinpointPose, pastPose;
         private long lastPinpointPollNanos;
         public static long pinpointPollGapMs = 1000;
         public static double pinpointResetDist = 5.0;
@@ -105,7 +105,6 @@
 
             if (usePinpoint && (currentTimeNanos - lastPinpointPollNanos >= pinpointPollGapMs * 1000_000 || constantCorrection)) {
                 //Log.i("Localization Test", "pinpoint in use");
-                Pose2d pastPose = ekf.getPose();
                 px = pinpoint.getPosX();
                 py = pinpoint.getPosY();
                 pt = pinpoint.getHeading();
@@ -117,8 +116,8 @@
                     ekf.updatePinpoint(newpinpoint.x, newpinpoint.y, newpinpoint.heading);
                 }
                 lastPinpointPose = currpinpoint.clone();
+                pastPose = ekf.getPose()
                 lastPinpointPollNanos = currentTimeNanos;
-
                 Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
                 DashboardUtil.drawRobot(fieldOverlay, new Pose2d(newpinpoint.x, newpinpoint.y, newpinpoint.heading), this.expectedColor);
             }
@@ -135,9 +134,9 @@
                 }
                 Canvas fieldOverlay = TelemetryUtil.packet.fieldOverlay();
                 DashboardUtil.drawRobot(fieldOverlay, new Pose2d(pinpoint.getPosX(), pinpoint.getPosY(), pinpoint.getHeading()), this.expectedColor);
-
-             */
             }
+             */
+
 
 
 

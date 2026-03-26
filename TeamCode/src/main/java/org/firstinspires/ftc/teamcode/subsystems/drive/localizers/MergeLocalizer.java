@@ -49,7 +49,7 @@ public class MergeLocalizer extends Localizer {
     public static boolean constantCorrection = false;
     public static boolean usePinpoint = true;
     public static double pinpointPollDist = 12;
-    public static long pinpointPollGapMs = 500;
+    public static long pinpointPollGapMs = 1000;
 
     // Camera
     private Pose2d estimatedCameraPose = new Pose2d(0,0,0);

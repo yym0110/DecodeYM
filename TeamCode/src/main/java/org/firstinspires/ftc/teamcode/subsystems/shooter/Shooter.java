@@ -74,7 +74,9 @@ public class Shooter {
     public static double ballInterpolateXFar = -70;
 
     public static double SOTMThreshold = 10;
-    public static double flywheelThresh = 50;
+    public static double flywheelExitReadyThresh = 50;
+    double sotmFilteredAccelX = 0;
+    double sotmFilteredAccelY = 0;
 
     public static boolean autoShootIfInZone = false;
     public static boolean forceUpdateVelBool = false;
@@ -128,6 +130,7 @@ public class Shooter {
                 flywheel.setTargetVelocity(forceUpdateVelBool ? forceUpdateVel : Dist.CLOSE.flywheelVel);
                 setHoodAngle(0.0);
                 setShooterBlocker(true);
+                turret.setTargetAngle(0);
 
                 if (aimRequest) {
                     aimRequest = false;
@@ -162,7 +165,7 @@ public class Shooter {
                 break;
             }
             case READY: {
-                if (!this.atVel(flywheelThresh) && Globals.RUNMODE == RunMode.TELEOP) {
+                if (!this.atVel(flywheelExitReadyThresh) && Globals.RUNMODE == RunMode.TELEOP) {
                     state = State.AIMING;
                 }
 
@@ -229,7 +232,7 @@ public class Shooter {
                 break;
             }
             case TEST: {
-                ballTarget = turretTrackTargetPos();
+                turretTrackTargetPos();
 
                 if (turretTrackInManual) {
                     double turretAngle = Math.atan2(ballTarget.getY() - ROBOT_POSITION.y, ballTarget.getX() - ROBOT_POSITION.x);
@@ -317,14 +320,12 @@ public class Shooter {
         }
     }
 
-    public Vector3 turretTrackTargetPos() {
-        if (ROBOT_POSITION == null || ROBOT_VELOCITY == null) return new Vector3(-67, 69 * (Globals.isRed ? 1 : -1), 45);
+    public void turretTrackTargetPos() {
         // for +-180 turret
         updateBallTargetInterpolate();
-        Vector3 P;
-        if (ROBOT_POSITION.x + 48 >= ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) P = new Vector3(ballTarget);
-        else ballTarget = new Vector3(ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.x * (Globals.isRed ? -1 : 1), ballTarget.z); // invert target along y = x or y = -x
-        return ballTarget;
+        if (ROBOT_POSITION.x < ROBOT_POSITION.y * (Globals.isRed ? -1 : 1)) {
+            ballTarget = new Vector3(ballTarget.y * (Globals.isRed ? -1 : 1), ballTarget.x * (Globals.isRed ? -1 : 1), ballTarget.z); // invert target along y = x or y = -x
+        }
     }
 
     public boolean aimLauncherV8() {
@@ -540,34 +541,27 @@ public class Shooter {
 
     public void predictGoal2AxisInterpolate() {
         //ballTarget = new Vector3(-67, 69 * (Globals.isRed ? 1 : -1), 45);
-        ballTarget = turretTrackTargetPos();
+        turretTrackTargetPos();
         double currFlywheelVel = flywheel.getFilteredVelocity();
 
         double initialDist = Math.hypot(ballTarget.x - ROBOT_POSITION.x, ballTarget.y - ROBOT_POSITION.y);
         double virtualX = ballTarget.x;
         double virtualY = ballTarget.y;
-        double lastFilteredAccelX = 0;
-        double lastFilteredAccelY = 0;
         minFlywheelVelocity = shooterTable.getFlywheelForDistance(initialDist);
         targetHoodAngle = shooterTable.getLaunchAngleForDistanceAndFlywheel(initialDist, currFlywheelVel);
 
         if (Math.hypot(ROBOT_GLOBAL_VELOCITY.x, ROBOT_GLOBAL_VELOCITY.y) >= SOTMThreshold && currFlywheelVel >= 300) {
             double time = initialDist / (currFlywheelVel / 2 * Math.sin(targetHoodAngle));
-            double dt = Globals.LOOP_TIME;
-            double weight = 0.8;
 
-            double rawX = (ROBOT_GLOBAL_VELOCITY.x - lastVel.x) / dt;
-            double rawY = (ROBOT_GLOBAL_VELOCITY.y - lastVel.y) / dt;
-            double accelX = lastFilteredAccelX * 0.8 + rawX * 0.2;
-            double accelY = lastFilteredAccelY * 0.8 + rawY * 0.2;
-            lastFilteredAccelX = accelX;
-            lastFilteredAccelY = accelY;
-            TelemetryUtil.packet.put("Velocity : X Acceleration", accelX);
-            TelemetryUtil.packet.put("Velocity : Y Acceleration", accelY);
+            double rawAccelX = (ROBOT_GLOBAL_VELOCITY.x - lastVel.x) / robot.sensors.loopTime;
+            double rawAccelY = (ROBOT_GLOBAL_VELOCITY.y - lastVel.y) / robot.sensors.loopTime;
+            sotmFilteredAccelX = sotmFilteredAccelX * 0.8 + rawAccelX * 0.2;
+            sotmFilteredAccelY = sotmFilteredAccelY * 0.8 + rawAccelY * 0.2;
+            TelemetryUtil.packet.put("Aim : X Acceleration", sotmFilteredAccelX);
+            TelemetryUtil.packet.put("Aim : Y Acceleration", sotmFilteredAccelY);
 
-
-            virtualX = ballTarget.x - (ROBOT_GLOBAL_VELOCITY.x * time + 0.5 * accelX * time * time);
-            virtualY = ballTarget.y - (ROBOT_GLOBAL_VELOCITY.y * time + 0.5 * accelY * time * time);
+            virtualX = ballTarget.x - (ROBOT_GLOBAL_VELOCITY.x * time + 0.5 * sotmFilteredAccelX * time * time);
+            virtualY = ballTarget.y - (ROBOT_GLOBAL_VELOCITY.y * time + 0.5 * sotmFilteredAccelY * time * time);
 
             Canvas canvas = TelemetryUtil.packet.fieldOverlay();
             canvas.setStroke(Globals.isRed ? "#ff4000" : "#0040ff");

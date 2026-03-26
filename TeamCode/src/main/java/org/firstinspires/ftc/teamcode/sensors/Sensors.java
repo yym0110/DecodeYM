@@ -28,7 +28,7 @@ public class Sensors {
     private final List<LynxModule> allHubs;
 
     public double loopTime;
-    private long currentTime, lastTime, initialTime;
+    private long currentTime;
 
     private final int[] odoWheelPositions = {0, 0, 0};
 
@@ -63,7 +63,7 @@ public class Sensors {
     public Sensors(Robot robot) {
         this.robot = robot;
 
-        initialTime = currentTime = System.nanoTime();
+        currentTime = System.nanoTime();
         voltageSensor = robot.hardwareMap.voltageSensor.iterator().next();
         voltage = voltageSensor.getVoltage();
 
@@ -84,7 +84,7 @@ public class Sensors {
     }
 
     public void update() {
-        lastTime = currentTime;
+        long lastTime = currentTime;
         currentTime = System.nanoTime();
         loopTime = (currentTime - lastTime) / 1e9;
 

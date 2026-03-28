@@ -181,16 +181,18 @@ public class RedGoalSortAuto extends LinearOpMode {
                     else robot.intake.setLeftBlocker(true);
                     slotsInUse++;
                     slots[(deltaX < 0 ? 1 : 0)] = balls[i];
-                    robot.drivetrain.goToPoint(new Pose2d(x + deltaX, y + i * 5, Math.PI / 2), 0.3);
+                    robot.drivetrain.goToPoint(new Pose2d(x + deltaX, y + i * 5, Math.PI / 2), 1.0);
                     robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
-                    robot.drivetrain.goToPoint(new Pose2d(x + deltaX, y + i * 5 + 5, Math.PI / 2), 0.3);
+                    robot.drivetrain.goToPoint(new Pose2d(x + deltaX, y + i * 5 + 5, Math.PI / 2), 1.0);
                     robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
 
                 } else {
                     Log.i("Sort", "ball in front is the correct ball");
-                    robot.drivetrain.goToPoint(new Pose2d(x, y + i * 5, Math.PI / 2), 0.3);
+                    /*
+                    robot.drivetrain.goToPoint(new Pose2d(x, y + i * 5, Math.PI / 2), 0.4);
                     robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
-                    robot.drivetrain.goToPoint(new Pose2d(x, y + i * 5 + 5, Math.PI / 2), 0.3);
+                     */
+                    robot.drivetrain.goToPoint(new Pose2d(x, y + i * 5 + 5, Math.PI / 2), 1.0);
                     robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
                 }
 
@@ -218,8 +220,6 @@ public class RedGoalSortAuto extends LinearOpMode {
         } else {
             // regular intake
             Log.i("Sort", "regular intake");
-            robot.drivetrain.goToPoint(new Pose2d(x, 20, Math.PI / 2), 1);
-            robot.waitWhile(() -> robot.drivetrain.state != Drivetrain.State.WAIT);
 
             // why do we have 2 extra go to's?? -Nikhil
             robot.drivetrain.goToPoint(new Pose2d(x, 50, Math.PI / 2), 1);
